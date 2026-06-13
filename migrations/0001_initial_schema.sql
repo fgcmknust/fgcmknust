@@ -1,3 +1,24 @@
+-- ==========================================
+-- FGCM KEEPERS: COMBINED DATABASE SCHEMA
+-- ==========================================
+-- Complete schema with all tables, indexes, and seed data
+-- Combines initial schema, security tables, and migration flags
+
+-- Rate-limit buckets for API protection
+CREATE TABLE IF NOT EXISTS rate_limits (
+  bucket TEXT PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 0,
+  window_start INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_rate_limits_window ON rate_limits(window_start);
+
+-- Migration tracking table (for idempotency)
+CREATE TABLE IF NOT EXISTS migration_flags (
+  name TEXT PRIMARY KEY,
+  applied_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Members table: stores church member registrations
 CREATE TABLE IF NOT EXISTS members (
     id TEXT PRIMARY KEY,
