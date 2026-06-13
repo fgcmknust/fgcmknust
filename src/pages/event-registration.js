@@ -4,6 +4,7 @@ import { eventsData } from '../data/events.js';
 import { getDummyEventImage } from '../utils/helpers.js';
 import { attachValidation, Validators, sanitizeInputString } from '../utils/validation.js';
 import { mountTurnstile } from '../utils/turnstile.js';
+import { getNavState } from '../utils/nav-state.js';
 
 export async function EventRegistration(container) {
   let allEvents = eventsData;
@@ -17,10 +18,8 @@ export async function EventRegistration(container) {
     console.error('API failed, using fallback data');
   }
 
-  const hashPart = (window.location.pathname + window.location.search);
-  const queryParamsString = hashPart.split('?')[1];
-  const urlParams = new URLSearchParams(queryParamsString || '');
-  const initialEventId = urlParams.get('eventId') || '';
+  // eventId is passed via sessionStorage so it doesn't leak into the address bar.
+  const initialEventId = getNavState('eventId') || '';
 
   const targetEvent = allEvents.find(e => e.id === initialEventId);
 

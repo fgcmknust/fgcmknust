@@ -63,8 +63,8 @@ export async function Home(container) {
       extraHTML: `
         <div class="position-absolute" style="bottom: 10%; right: 5%; z-index: 10;">
           <div class="flex gap-1">
-            <a href="/events${defaultEventId ? `?eventId=${encodeURIComponent(defaultEventId)}` : ''}" class="btn bg-white text-dark shadow-md" style="border-radius: 0;">Learn More</a>
-            <a href="/event-registration${defaultEventId ? `?eventId=${encodeURIComponent(defaultEventId)}` : ''}" class="btn btn-gold shadow-md hover-lift hero-register-btn" data-event-image="/images/Laptop.jpg" style="border-radius: 0;">Register</a>
+            <a href="/events"${defaultEventId ? ` data-event-id="${escapeHtml(defaultEventId)}"` : ''} class="btn bg-white text-dark shadow-md" style="border-radius: 0;">Learn More</a>
+            <a href="/event-registration"${defaultEventId ? ` data-event-id="${escapeHtml(defaultEventId)}"` : ''} class="btn btn-gold shadow-md hover-lift hero-register-btn" data-event-image="/images/Laptop.jpg" style="border-radius: 0;">Register</a>
           </div>
         </div>
       `
@@ -195,9 +195,9 @@ export async function Home(container) {
         if (e.target.closest('a')) return;
         const id = card.dataset.eventId;
         if (id) {
-          // explicit navigation to events page with eventId
-          try { sessionStorage.setItem('skipRestore:#/events', '1'); } catch (err) {}
-          window.appNavigate(`/events?eventId=${id}`);
+          try { sessionStorage.setItem('skipRestore:/events', '1'); } catch (err) {}
+          try { sessionStorage.setItem('nav:eventId', id); } catch (err) {}
+          window.appNavigate('/events');
         }
       };
       card._homeClick = handler;

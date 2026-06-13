@@ -47,7 +47,7 @@ export function renderEventCard(event) {
           ${escapeHtml(truncate(stripHtml(event.description), 140))}
         </p>
 
-        <a href="/event-registration?eventId=${encodeURIComponent(event.id)}" class="text-gold font-bold text-small flex items-center gap-1 mt-auto" style="text-decoration: none;">
+        <a href="/event-registration" data-event-id="${escapeHtml(event.id)}" class="text-gold font-bold text-small flex items-center gap-1 mt-auto" style="text-decoration: none;">
           Register Now <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
         </a>
       </div>

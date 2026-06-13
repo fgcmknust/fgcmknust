@@ -1,6 +1,7 @@
 import './index.css';
 import { Router } from './utils/router.js';
 import { Animations } from './utils/animations.js';
+import { installNavStateDelegate } from './utils/nav-state.js';
 
 // Components
 import { renderNavbar } from './components/navbar.js';
@@ -52,7 +53,7 @@ const routes = {
   '/': Home,
   '/events': Events,
   '/store': Store,
-  '/product/:id': Product,
+  '/product': Product,
   '/register': Register,
   '/event-registration': EventRegistration,
   '/cart': Cart,
@@ -75,6 +76,7 @@ const routes = {
 
 // Start Application
 document.addEventListener('DOMContentLoaded', () => {
+  installNavStateDelegate();
   initAppShell();
   updateFooterLock();
 

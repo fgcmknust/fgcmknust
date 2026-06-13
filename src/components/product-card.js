@@ -17,7 +17,7 @@ export function renderProductCard(product) {
         <!-- Hover Overlay -->
         <div class="product-overlay position-absolute w-full h-full flex items-center justify-center flex-col gap-1" 
              style="background: rgba(255, 255, 255, 0.85); top: 0; left: 0; opacity: 0; transition: opacity 0.3s ease;">
-          <a href="/product/${escapeHtml(product.id)}" class="btn btn-gold w-full max-w-[200px]" style="max-width: 80%;">View Details</a>
+          <a href="/product" data-product-id="${escapeHtml(product.id)}" class="btn btn-gold w-full max-w-[200px]" style="max-width: 80%;">View Details</a>
           <button class="btn btn-outline w-full max-w-[200px] quick-add-btn" data-id="${escapeHtml(product.id)}" style="max-width: 80%;">
             <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Quick Add
           </button>

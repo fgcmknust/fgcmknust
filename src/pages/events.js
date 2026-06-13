@@ -3,6 +3,7 @@ import { renderEventCard } from '../components/event-card.js';
 import { eventsData } from '../data/events.js';
 import { Animations } from '../utils/animations.js';
 import { getDummyEventImage, escapeHtml } from '../utils/helpers.js';
+import { getNavState } from '../utils/nav-state.js';
 
 export async function Events(container) {
   let allEvents = eventsData;
@@ -57,7 +58,10 @@ export async function Events(container) {
       const handler = (e) => {
         if (e.target.closest('a')) return;
         const id = card.dataset.eventId;
-        if (id) window.appNavigate(`/events?eventId=${encodeURIComponent(id)}`);
+        if (id) {
+          try { sessionStorage.setItem('nav:eventId', id); } catch (err) {}
+          window.appNavigate('/events');
+        }
       };
       card._clickHandler = handler;
       card.addEventListener('click', handler);
@@ -69,10 +73,9 @@ export async function Events(container) {
   const eventsGrid = document.getElementById('events-grid');
   // initial attach
   attachEventCardHandlers(eventsGrid);
-  const hashPart = (window.location.pathname + window.location.search);
-  const queryParamsString = hashPart.split('?')[1];
-  const urlParams = new URLSearchParams(queryParamsString || '');
-  const activeEventId = urlParams.get('eventId');
+  // Active event comes from sessionStorage (set by clicking a card / "Learn More" button)
+  // so the eventId is never exposed in the address bar.
+  const activeEventId = getNavState('eventId');
 
   if (activeEventId) {
     const event = allEvents.find(e => e.id === activeEventId);
@@ -99,7 +102,7 @@ export async function Events(container) {
           <div class="text-small text-muted" style="line-height: 1.6; margin-bottom: 1rem;">${event.description}</div>
           <div class="flex gap-1 mt-auto justify-end">
             <button class="btn btn-outline btn-sm" onclick="window.closeModal()">Close</button>
-            <a href="/event-registration?eventId=${encodeURIComponent(event.id)}" onclick="window.closeModal()" class="btn btn-gold btn-sm">Register Now</a>
+            <a href="/event-registration" data-event-id="${escapeHtml(event.id)}" onclick="window.closeModal()" class="btn btn-gold btn-sm">Register Now</a>
           </div>
         </div>
       `;

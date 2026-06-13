@@ -1,7 +1,18 @@
 import { productsData } from '../data/products.js';
 import { formatGHS, escapeHtml } from '../utils/helpers.js';
+import { getNavState } from '../utils/nav-state.js';
 
-export async function Product(container, { params }) {
+export async function Product(container) {
+  // productId comes via sessionStorage (set by clicking a product card / View Details),
+  // never via the URL — so the identifier stays out of the address bar.
+  const productId = getNavState('productId');
+
+  if (!productId) {
+    // Nothing to show (e.g. user opened /product directly) — bounce to the store.
+    window.appNavigate('/store');
+    return;
+  }
+
   let products = productsData;
   try {
     const res = await fetch('/api/products');
@@ -13,7 +24,7 @@ export async function Product(container, { params }) {
     // Fall back to static productsData.
   }
 
-  const product = products.find(p => p.id === params.id);
+  const product = products.find(p => p.id === productId);
 
   if (!product) {
     container.innerHTML = `

@@ -128,7 +128,10 @@ export async function Store(container) {
       article.addEventListener('click', (e) => {
         if (e.target.closest('.quick-add-btn')) return;
         const id = article.dataset.id;
-        if (id) window.appNavigate(`/product/${encodeURIComponent(id)}`);
+        if (id) {
+          try { sessionStorage.setItem('nav:productId', id); } catch (err) {}
+          window.appNavigate('/product');
+        }
       });
     });
   }
