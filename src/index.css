@@ -1341,10 +1341,18 @@ body.no-scroll {
    REGISTER PAGE & EVENT REGISTRATION HERO
    ========================================================= */
 .register-hero {
+  background-image: url('/images/Regis.jpg');
   background-size: cover;
-  background-position: center;
+  background-position: center center;
   background-repeat: no-repeat;
   background-attachment: scroll;
+}
+
+@media (max-width: 767px) {
+  .register-hero {
+    background-position: 70% center;
+    min-height: var(--mobile-vh, 100vh) !important;
+  }
 }
 
 .register-hero::before {
