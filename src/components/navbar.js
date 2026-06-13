@@ -2,21 +2,21 @@ import { churchInfo } from '../data/church-info.js';
 import { CartStore } from '../utils/cart-store.js';
 
 export function renderNavbar(container) {
-  const currentPath = window.location.hash.slice(1).split('?')[0] || '/';
+  const currentPath = (window.location.pathname + window.location.search).split('?')[0] || '/';
   
   const navHTML = `
     <header id="main-nav" class="navbar transparent">
       <div class="container flex justify-between items-center">
-        <a href="#/" class="logo flex items-center gap-1">
+        <a href="/" class="logo flex items-center gap-1">
           <img src="/images/FGCI LOGO.png" alt="FGCM-KNUST Logo" style="height: 40px; width: auto; object-fit: contain;" />
           <span class="logo-text">${churchInfo.shortName}</span>
         </a>
         
         <nav class="desktop-nav items-center gap-4">
-          <a href="#/" class="nav-link ${currentPath === '/' ? 'active' : ''}">Home</a>
-          <a href="#/events" class="nav-link ${currentPath === '/events' ? 'active' : ''}">Events</a>
-          <a href="#/store" class="nav-link ${currentPath === '/store' ? 'active' : ''}">Store</a>
-          <a href="#/register" class="btn btn-gold btn-sm">Join Family</a>
+          <a href="/" class="nav-link ${currentPath === '/' ? 'active' : ''}">Home</a>
+          <a href="/events" class="nav-link ${currentPath === '/events' ? 'active' : ''}">Events</a>
+          <a href="/store" class="nav-link ${currentPath === '/store' ? 'active' : ''}">Store</a>
+          <a href="/register" class="btn btn-gold btn-sm">Join Family</a>
         </nav>
         
         <div class="nav-actions flex items-center gap-2">
@@ -34,10 +34,10 @@ export function renderNavbar(container) {
       <!-- Mobile Dropdown Menu -->
       <div id="mobile-menu" class="mobile-menu-dropdown">
         <nav class="mobile-nav flex flex-col gap-2">
-          <a href="#/" class="mobile-link ${currentPath === '/' ? 'active-mobile-link' : ''}">Home</a>
-          <a href="#/events" class="mobile-link ${currentPath === '/events' ? 'active-mobile-link' : ''}">Events</a>
-          <a href="#/store" class="mobile-link ${currentPath === '/store' ? 'active-mobile-link' : ''}">Store</a>
-          <a href="#/register" class="mobile-link-join">Join Family</a>
+          <a href="/" class="mobile-link ${currentPath === '/' ? 'active-mobile-link' : ''}">Home</a>
+          <a href="/events" class="mobile-link ${currentPath === '/events' ? 'active-mobile-link' : ''}">Events</a>
+          <a href="/store" class="mobile-link ${currentPath === '/store' ? 'active-mobile-link' : ''}">Store</a>
+          <a href="/register" class="mobile-link-join">Join Family</a>
         </nav>
       </div>
     </header>
@@ -50,39 +50,47 @@ export function renderNavbar(container) {
     lucide.createIcons({ root: container });
   }
 
-  // Navbar Scroll Effect
+  // Navbar Scroll Effect (rAF-throttled + passive listener; toggle only on threshold cross)
   const navbar = document.getElementById('main-nav');
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-      navbar.classList.remove('transparent');
-      navbar.classList.add('solid');
-    } else {
-      navbar.classList.add('transparent');
-      navbar.classList.remove('solid');
+  let navTicking = false;
+  let navIsSolid = false;
+  const updateNavbarScroll = () => {
+    const solid = window.scrollY > 50;
+    if (solid !== navIsSolid) {
+      navIsSolid = solid;
+      navbar.classList.toggle('solid', solid);
+      navbar.classList.toggle('transparent', !solid);
     }
-  });
+    navTicking = false;
+  };
+  window.addEventListener('scroll', () => {
+    if (!navTicking) {
+      navTicking = true;
+      requestAnimationFrame(updateNavbarScroll);
+    }
+  }, { passive: true });
 
   // Dynamic Active Link Update
   const updateActiveLink = () => {
-    const hash = window.location.hash.slice(1);
+    const hash = (window.location.pathname + window.location.search);
     const path = hash.split('?')[0] || '/';
     // Desktop links
     const desktopLinks = container.querySelectorAll('.desktop-nav .nav-link');
     desktopLinks.forEach(link => {
-      const linkPath = link.getAttribute('href').slice(1).split('?')[0] || '/';
+      const linkPath = (link.getAttribute('href') || '').split('?')[0] || '/';
       link.classList.toggle('active', linkPath === path);
     });
     // Mobile links
     const mobileLinks = container.querySelectorAll('.mobile-link');
     mobileLinks.forEach(link => {
-      const linkPath = link.getAttribute('href').slice(1).split('?')[0] || '/';
+      const linkPath = (link.getAttribute('href') || '').split('?')[0] || '/';
       link.classList.toggle('active-mobile-link', linkPath === path);
     });
   };
 
   // Update Navbar Theme based on route (e.g. keeping text white on register page)
   const updateNavbarTheme = () => {
-    const hash = window.location.hash.slice(1);
+    const hash = (window.location.pathname + window.location.search);
     const path = hash.split('?')[0] || '/';
     if (path === '/register') {
       navbar.classList.add('register-page-nav');
@@ -93,7 +101,7 @@ export function renderNavbar(container) {
 
   // Update Cart visibility: only visible on store, product details, and cart pages
   const updateCartVisibility = () => {
-    const hash = window.location.hash.slice(1);
+    const hash = (window.location.pathname + window.location.search);
     const path = hash.split('?')[0] || '/';
     const cartToggle = document.getElementById('cart-toggle');
     if (cartToggle) {
@@ -111,7 +119,8 @@ export function renderNavbar(container) {
     updateCartVisibility();
   };
   
-  window.addEventListener('hashchange', handleHashChange);
+  window.addEventListener('routechange', handleHashChange);
+  window.addEventListener('popstate', handleHashChange);
 
   // Initialize navbar state
   updateActiveLink();
@@ -177,7 +186,8 @@ export function renderNavbar(container) {
     }
   });
 
-  window.addEventListener('hashchange', closeMenu);
+  window.addEventListener('routechange', closeMenu);
+  window.addEventListener('popstate', closeMenu);
 
   // Cart Dispatch Event Listener
   window.addEventListener('cart-updated', (e) => {
@@ -199,7 +209,7 @@ export function renderNavbar(container) {
     cartToggle.addEventListener('click', () => {
       const isMobile = window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
       if (isMobile) {
-        window.location.hash = '#/cart';
+        window.appNavigate('/cart');
       } else {
         window.dispatchEvent(new CustomEvent('open-cart-drawer'));
       }

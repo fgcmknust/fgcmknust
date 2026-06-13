@@ -14,7 +14,7 @@ export async function Cart(container) {
         <i data-lucide="shopping-cart" class="text-muted mb-2" style="width: 64px; height: 64px; opacity: 0.3;"></i>
         <h2>Your Cart is Empty</h2>
         <p class="text-muted mb-3">Looks like you haven't added any merch to your cart yet.</p>
-        <a href="#/store" class="btn btn-gold hover-lift">Browse Store</a>
+        <a href="/store" class="btn btn-gold hover-lift">Browse Store</a>
       </section>
     `;
     if (window.lucide) lucide.createIcons({ root: container });
@@ -48,7 +48,7 @@ export async function Cart(container) {
               <div class="cart-items flex flex-col gap-2">
                 ${items.map(item => `
                   <div class="cart-item flex gap-2 items-center pb-2 border-b">
-                    <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="bg-bg-alt rounded" style="width: 80px; height: 80px; object-fit: contain; padding: 0.25rem;">
+                    <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="bg-bg-alt rounded" loading="lazy" decoding="async" style="width: 80px; height: 80px; object-fit: contain; padding: 0.25rem;">
                     <div class="flex-1">
                       <h4 class="text-small mb-0 font-body">${escapeHtml(item.name)}</h4>
                       <p class="text-muted text-small mb-0">Size: ${escapeHtml(item.size)}${item.color ? ' • Colour: ' + escapeHtml(item.color) : ''}</p>
@@ -254,7 +254,7 @@ export async function Cart(container) {
           ]
         },
         callback: function(response) {
-          window.location.hash = `/payment-status?reference=${encodeURIComponent(response.reference)}`;
+          window.appNavigate(`/payment-status?reference=${encodeURIComponent(response.reference)}`);
         },
         onClose: function() {
           showToast('Payment window closed.', 'info');

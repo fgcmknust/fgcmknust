@@ -21,10 +21,10 @@ export function renderFooter(container) {
           <div class="footer-col links">
             <h4 class="footer-subtitle mb-1">Quick Links</h4>
             <ul class="footer-links">
-              <li><a href="#/" class="text-muted text-small hover-gold">Home</a></li>
-              <li><a href="#/events" class="text-muted text-small hover-gold">Upcoming Events</a></li>
-              <li><a href="#/store" class="text-muted text-small hover-gold">Merch Store</a></li>
-              <li><a href="#/register" class="text-muted text-small hover-gold">Become a Member</a></li>
+              <li><a href="/" class="text-muted text-small hover-gold">Home</a></li>
+              <li><a href="/events" class="text-muted text-small hover-gold">Upcoming Events</a></li>
+              <li><a href="/store" class="text-muted text-small hover-gold">Merch Store</a></li>
+              <li><a href="/register" class="text-muted text-small hover-gold">Become a Member</a></li>
             </ul>
           </div>
 

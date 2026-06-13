@@ -13,7 +13,7 @@ export function renderHeroCarousel(container, events) {
 
     return `
             <div class="carousel-slide" style="min-width: 100%; height: 100%; position: relative;">
-              <img src="${escapeHtml(ev.image)}" alt="${escapeHtml(ev.title)}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;">
+              <img src="${escapeHtml(ev.image)}" alt="${escapeHtml(ev.title)}" decoding="async" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;">
               <div class="carousel-content position-absolute flex flex-col justify-center items-center text-center p-4" 
                    style="top: 0; left: 0; width: 100%; height: 100%; z-index: 2;">
                 
@@ -21,8 +21,8 @@ export function renderHeroCarousel(container, events) {
                   <h1 class="display text-white mb-2" style="text-shadow: 0 4px 12px rgba(0,0,0,0.5);">${escapeHtml(ev.title)}</h1>
                   <p class="text-white mb-4 max-w-[600px]" style="font-size: 1.2rem; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">${escapeHtml(ev.description)}</p>
                   <div class="flex gap-2">
-                    <a href="#/event-registration?eventId=${escapeHtml(ev.id)}" class="btn btn-gold hero-register-btn" data-event-image="${escapeHtml(ev.image)}">Register Now</a>
-                    <a href="#/events?eventId=${escapeHtml(ev.id)}" class="btn btn-outline" style="border-color: white; color: white;">Learn More</a>
+                    <a href="/event-registration?eventId=${escapeHtml(ev.id)}" class="btn btn-gold hero-register-btn" data-event-image="${escapeHtml(ev.image)}">Register Now</a>
+                    <a href="/events?eventId=${escapeHtml(ev.id)}" class="btn btn-outline" style="border-color: white; color: white;">Learn More</a>
                   </div>
                 ` : `
                   <h1 class="display text-white mb-2" style="text-shadow: 0 4px 12px rgba(0,0,0,0.5);">${escapeHtml(ev.title)}</h1>
@@ -31,8 +31,8 @@ export function renderHeroCarousel(container, events) {
                   </p>
                   <p class="text-white mb-4 max-w-[600px]" style="font-size: 1.1rem; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">${escapeHtml(ev.description)}</p>
                   <div class="flex gap-2">
-                    <a href="#/event-registration?eventId=${escapeHtml(ev.id)}" class="btn btn-gold hero-register-btn" data-event-image="${escapeHtml(ev.image)}">Register Now</a>
-                    <a href="#/events?eventId=${escapeHtml(ev.id)}" class="btn btn-outline" style="border-color: white; color: white;">Learn More</a>
+                    <a href="/event-registration?eventId=${escapeHtml(ev.id)}" class="btn btn-gold hero-register-btn" data-event-image="${escapeHtml(ev.image)}">Register Now</a>
+                    <a href="/events?eventId=${escapeHtml(ev.id)}" class="btn btn-outline" style="border-color: white; color: white;">Learn More</a>
                   </div>
                 `}
               </div>

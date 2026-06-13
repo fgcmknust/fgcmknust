@@ -67,7 +67,7 @@ const routes = {
         <h1 class="display text-gold mb-1">404</h1>
         <h2>Page Not Found</h2>
         <p class="text-muted">The page you're looking for doesn't exist or has been moved.</p>
-        <a href="#/" class="btn btn-outline mt-3">Return to Home</a>
+        <a href="/" class="btn btn-outline mt-3">Return to Home</a>
       </section>
     `;
   }
@@ -78,8 +78,21 @@ document.addEventListener('DOMContentLoaded', () => {
   initAppShell();
   updateFooterLock();
 
-  window.addEventListener('scroll', updateFooterLock);
-  window.addEventListener('resize', updateFooterLock);
+  // rAF-throttled scroll + debounced resize to avoid layout thrashing
+  let footerTicking = false;
+  const onScroll = () => {
+    if (!footerTicking) {
+      footerTicking = true;
+      requestAnimationFrame(() => { updateFooterLock(); footerTicking = false; });
+    }
+  };
+  let resizeTimer;
+  const onResize = () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(updateFooterLock, 120);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onResize);
   
   const router = new Router(routes, async (renderFn) => {
     const container = document.getElementById('page-content');

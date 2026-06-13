@@ -15,6 +15,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
 
+    <!-- Preload above-the-fold hero images so they render immediately -->
+    <link rel="preload" as="image" href="/images/Laptop.jpg" media="(min-width: 768px)" fetchpriority="high" />
+    <link rel="preload" as="image" href="/images/phone.jpg" media="(max-width: 767px)" fetchpriority="high" />
+    <link rel="preconnect" href="https://api.paystack.co" />
+    <link rel="dns-prefetch" href="https://challenges.cloudflare.com" />
+
     <!-- Dynamic Viewport Height Cache (used by hero sections to avoid iOS URL-bar jumps) -->
     <script>
       (function() {

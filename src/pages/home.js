@@ -63,8 +63,8 @@ export async function Home(container) {
       extraHTML: `
         <div class="position-absolute" style="bottom: 10%; right: 5%; z-index: 10;">
           <div class="flex gap-1">
-            <a href="#/events${defaultEventId ? `?eventId=${encodeURIComponent(defaultEventId)}` : ''}" class="btn bg-white text-dark shadow-md" style="border-radius: 0;">Learn More</a>
-            <a href="#/event-registration${defaultEventId ? `?eventId=${encodeURIComponent(defaultEventId)}` : ''}" class="btn btn-gold shadow-md hover-lift hero-register-btn" data-event-image="/images/Laptop.jpg" style="border-radius: 0;">Register</a>
+            <a href="/events${defaultEventId ? `?eventId=${encodeURIComponent(defaultEventId)}` : ''}" class="btn bg-white text-dark shadow-md" style="border-radius: 0;">Learn More</a>
+            <a href="/event-registration${defaultEventId ? `?eventId=${encodeURIComponent(defaultEventId)}` : ''}" class="btn btn-gold shadow-md hover-lift hero-register-btn" data-event-image="/images/Laptop.jpg" style="border-radius: 0;">Register</a>
           </div>
         </div>
       `
@@ -89,7 +89,7 @@ export async function Home(container) {
           </blockquote>
         </div>
         <div data-reveal="true" data-reveal-direction="left" class="position-relative welcome-media">
-           <img src="/images/event-sunday.jpg" alt="Church Service" class="rounded shadow-lg w-full" style="height: 400px; object-fit: cover;">
+           <img src="/images/event-sunday.jpg" alt="Church Service" class="rounded shadow-lg w-full" loading="lazy" decoding="async" style="height: 400px; object-fit: cover;">
            <div class="position-absolute glass p-2 rounded shadow-md" style="bottom: -2rem; right: 2rem; max-width: 200px;">
               <p class="font-bold text-small mb-0">Join us this Sunday</p>
               <p class="text-muted text-small mb-0 mt-0.5">9:00 AM @ ${churchInfo.address}</p>
@@ -103,7 +103,7 @@ export async function Home(container) {
       <div class="container">
         <div class="flex justify-between items-center mb-3">
           <h2 class="mb-0" data-reveal="true">Upcoming Events</h2>
-          <a href="#/events" class="text-gold font-bold hover-gold-dark text-small">View All →</a>
+          <a href="/events" class="text-gold font-bold hover-gold-dark text-small">View All →</a>
         </div>
         <div class="grid grid-3" id="featured-events-grid">
           ${featuredEvents.map(e => renderEventCard(e)).join('')}
@@ -153,7 +153,7 @@ export async function Home(container) {
         <p class="text-dark opacity-80 mb-3 max-w-md mx-auto" style="max-width: 600px; margin-left: auto; margin-right: auto;">
           Take the next step in your spiritual journey. Join a department, serve with your gifts, and grow in a supportive community.
         </p>
-        <a href="#/register" class="btn btn-dark bg-dark text-white hover-lift px-4">Register Now</a>
+        <a href="/register" class="btn btn-dark bg-dark text-white hover-lift px-4">Register Now</a>
       </div>
     </section>
   `;
@@ -197,7 +197,7 @@ export async function Home(container) {
         if (id) {
           // explicit navigation to events page with eventId
           try { sessionStorage.setItem('skipRestore:#/events', '1'); } catch (err) {}
-          window.location.hash = `#/events?eventId=${id}`;
+          window.appNavigate(`/events?eventId=${id}`);
         }
       };
       card._homeClick = handler;

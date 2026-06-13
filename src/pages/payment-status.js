@@ -9,7 +9,7 @@ export async function PaymentStatus(container, { query }) {
       <section class="section text-center" style="min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
         <h2>Invalid Request</h2>
         <p class="text-muted">No payment reference provided.</p>
-        <a href="#/" class="btn btn-gold mt-2">Return Home</a>
+        <a href="/" class="btn btn-gold mt-2">Return Home</a>
       </section>
     `;
     return;
@@ -55,7 +55,7 @@ export async function PaymentStatus(container, { query }) {
               </div>
             </div>
             
-            <a href="#/store" class="btn btn-gold w-full">Continue Shopping</a>
+            <a href="/store" class="btn btn-gold w-full">Continue Shopping</a>
           </div>
         </section>
       `;
@@ -80,8 +80,8 @@ export async function PaymentStatus(container, { query }) {
           </div>
           
           <div class="grid grid-2 gap-1">
-             <a href="#/cart" class="btn btn-outline text-center">Try Again</a>
-             <a href="#/contact" class="btn btn-outline text-center border-gray">Support</a>
+             <a href="/cart" class="btn btn-outline text-center">Try Again</a>
+             <a href="/contact" class="btn btn-outline text-center border-gray">Support</a>
           </div>
         </div>
       </section>

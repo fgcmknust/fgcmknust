@@ -21,7 +21,7 @@ export async function Product(container, { params }) {
         <div class="container">
           <h2>Product Not Found</h2>
           <p class="text-muted">The item you are looking for does not exist.</p>
-          <a href="#/store" class="btn btn-gold mt-2">Back to Store</a>
+          <a href="/store" class="btn btn-gold mt-2">Back to Store</a>
         </div>
       </section>
     `;

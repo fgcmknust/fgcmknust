@@ -260,6 +260,16 @@ img {
 
 .section {
   padding: 5rem 0;
+  /* Skip rendering off-screen sections until needed (big perf win) */
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 600px;
+}
+
+/* Always render hero sections immediately (they're above the fold) */
+.page-hero,
+.register-hero {
+  content-visibility: visible;
+  contain-intrinsic-size: auto;
 }
 
 .section-sm {
@@ -874,9 +884,9 @@ body.no-scroll {
 }
 
 .navbar.solid {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(30px) saturate(150%);
-  -webkit-backdrop-filter: blur(30px) saturate(150%);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
   border-bottom: 1px solid rgba(255, 255, 255, 0.4);
   padding: 0.75rem 0;
@@ -991,9 +1001,9 @@ body.no-scroll {
     top: 60px;
     left: 0.75rem;
     right: 0.75rem;
-    background: rgba(167, 243, 208, 0.75);
-    backdrop-filter: blur(24px) saturate(160%);
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    background: rgba(167, 243, 208, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     border: 1px solid rgba(107, 214, 157, 0.2);

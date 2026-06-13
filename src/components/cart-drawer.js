@@ -38,8 +38,8 @@ export function renderCartDrawer() {
         </div>
         <p class="text-small text-muted mb-3">Delivery charges calculated at checkout.</p>
         <div class="grid grid-2 gap-1">
-          <a href="#/cart" id="btn-view-cart" class="btn btn-outline w-full text-center">View Cart</a>
-          <a href="#/cart" id="btn-checkout" class="btn btn-gold w-full text-center">Checkout</a>
+          <a href="/cart" id="btn-view-cart" class="btn btn-outline w-full text-center">View Cart</a>
+          <a href="/cart" id="btn-checkout" class="btn btn-gold w-full text-center">Checkout</a>
         </div>
       </div>
     </div>

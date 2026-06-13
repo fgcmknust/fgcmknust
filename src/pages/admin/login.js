@@ -4,7 +4,7 @@ import { mountTurnstile } from '../../utils/turnstile.js';
 
 export async function AdminLogin(container) {
   if (sessionStorage.getItem('adminToken')) {
-    window.location.hash = '#/admin';
+    window.appNavigate('/admin');
     return;
   }
 
@@ -77,7 +77,7 @@ export async function AdminLogin(container) {
 
       sessionStorage.setItem('adminToken', token);
       showToast('Login successful', 'success');
-      window.location.hash = '#/admin';
+      window.appNavigate('/admin');
     } catch (err) {
       showToast('Error validating token', 'error');
       if (captcha) captcha.reset();

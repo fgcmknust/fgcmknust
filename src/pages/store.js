@@ -128,7 +128,7 @@ export async function Store(container) {
       article.addEventListener('click', (e) => {
         if (e.target.closest('.quick-add-btn')) return;
         const id = article.dataset.id;
-        if (id) window.location.hash = `#/product/${encodeURIComponent(id)}`;
+        if (id) window.appNavigate(`/product/${encodeURIComponent(id)}`);
       });
     });
   }

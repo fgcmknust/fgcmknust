@@ -16,7 +16,7 @@ export function renderEventCard(event) {
     <article class="card event-card hover-lift" data-event-id="${escapeHtml(event.id)}" data-reveal="true" data-reveal-direction="up" style="cursor: pointer;">
       <!-- Image Cover -->
       <div class="event-cover" style="height: 200px; background-color: var(--color-dark-surface);">
-        <img src="${escapeHtml(event.image)}" alt="${escapeHtml(event.title)}">
+        <img src="${escapeHtml(event.image)}" alt="${escapeHtml(event.title)}" loading="lazy" decoding="async">
 
         <!-- Category Pill -->
         <div class="position-absolute" style="top: 1rem; right: 1rem;">
@@ -47,7 +47,7 @@ export function renderEventCard(event) {
           ${escapeHtml(truncate(stripHtml(event.description), 140))}
         </p>
 
-        <a href="#/event-registration?eventId=${encodeURIComponent(event.id)}" class="text-gold font-bold text-small flex items-center gap-1 mt-auto" style="text-decoration: none;">
+        <a href="/event-registration?eventId=${encodeURIComponent(event.id)}" class="text-gold font-bold text-small flex items-center gap-1 mt-auto" style="text-decoration: none;">
           Register Now <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
         </a>
       </div>

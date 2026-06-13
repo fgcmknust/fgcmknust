@@ -17,7 +17,7 @@ export async function EventRegistration(container) {
     console.error('API failed, using fallback data');
   }
 
-  const hashPart = window.location.hash;
+  const hashPart = (window.location.pathname + window.location.search);
   const queryParamsString = hashPart.split('?')[1];
   const urlParams = new URLSearchParams(queryParamsString || '');
   const initialEventId = urlParams.get('eventId') || '';
@@ -209,7 +209,7 @@ export async function EventRegistration(container) {
       if (res.ok) {
         showToast('Successfully registered for the event!', 'success');
         form.reset();
-        setTimeout(() => { window.location.hash = '/events'; }, 2000);
+        setTimeout(() => { window.appNavigate('/events'); }, 2000);
       } else {
         if (res.status === 429) {
           showToast(result.error || 'Too many attempts. Please try again later.', 'error');

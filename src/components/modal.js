@@ -36,7 +36,7 @@ export function showModal(title, contentHTML) {
 
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop position-absolute w-full h-full';
-  backdrop.style.cssText = 'background: rgba(0,0,0,0.6); top: 0; left: 0; backdrop-filter: blur(8px);';
+  backdrop.style.cssText = 'background: rgba(0,0,0,0.7); top: 0; left: 0;';
 
   const modalContent = document.createElement('div');
   modalContent.className = 'modal-content bg-white p-4 rounded shadow-lg position-relative';

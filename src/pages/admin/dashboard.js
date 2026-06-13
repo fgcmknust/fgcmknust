@@ -1,7 +1,7 @@
 export async function AdminDashboard(container) {
   const token = sessionStorage.getItem('adminToken');
   if (!token) {
-    window.location.hash = '#/admin/login';
+    window.appNavigate('/admin/login');
     return;
   }
 
@@ -16,9 +16,9 @@ export async function AdminDashboard(container) {
         </div>
         
         <nav class="flex flex-col gap-1">
-          <a href="#/admin" class="btn w-full text-left" style="background: var(--color-gold); color: white;">Dashboard</a>
-          <a href="#/admin/events" class="btn btn-outline w-full text-left">Manage Events</a>
-          <a href="#/admin/products" class="btn btn-outline w-full text-left">Manage Merch</a>
+          <a href="/admin" class="btn w-full text-left" style="background: var(--color-gold); color: white;">Dashboard</a>
+          <a href="/admin/events" class="btn btn-outline w-full text-left">Manage Events</a>
+          <a href="/admin/products" class="btn btn-outline w-full text-left">Manage Merch</a>
         </nav>
         
         <button id="admin-logout-btn" class="btn btn-outline w-full mt-auto" style="border-color: #dc3545; color: #dc3545;">Logout</button>
@@ -33,13 +33,13 @@ export async function AdminDashboard(container) {
           <div class="card p-3 text-center hover-lift">
             <h3 class="display text-gold" style="font-size: 3rem;" id="stat-events">-</h3>
             <p class="font-semibold text-muted">Total Events</p>
-            <a href="#/admin/events" class="btn btn-outline btn-sm mt-2">View Events</a>
+            <a href="/admin/events" class="btn btn-outline btn-sm mt-2">View Events</a>
           </div>
           
           <div class="card p-3 text-center hover-lift">
             <h3 class="display text-gold" style="font-size: 3rem;" id="stat-products">-</h3>
             <p class="font-semibold text-muted">Total Products</p>
-            <a href="#/admin/products" class="btn btn-outline btn-sm mt-2">View Products</a>
+            <a href="/admin/products" class="btn btn-outline btn-sm mt-2">View Products</a>
           </div>
         </div>
       </main>
@@ -49,7 +49,7 @@ export async function AdminDashboard(container) {
   // Logout handler
   document.getElementById('admin-logout-btn').addEventListener('click', () => {
     sessionStorage.removeItem('adminToken');
-    window.location.hash = '#/';
+    window.appNavigate('/');
     window.location.reload(); // Reload to restore navbar/footer
   });
 

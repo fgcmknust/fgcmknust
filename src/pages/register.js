@@ -161,7 +161,7 @@ export async function Register(container) {
       if (res.ok) {
         showToast('Registration successful! Welcome to the family.', 'success');
         form.reset();
-        setTimeout(() => { window.location.hash = '/'; }, 2000);
+        setTimeout(() => { window.appNavigate('/'); }, 2000);
       } else {
         if (res.status === 429) {
           showToast(result.error || 'Too many attempts. Please try again later.', 'error');

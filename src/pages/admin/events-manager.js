@@ -17,7 +17,7 @@ function validateEventPayload(p) {
 export async function EventsManager(container) {
   const token = sessionStorage.getItem('adminToken');
   if (!token) {
-    window.location.hash = '#/admin/login';
+    window.appNavigate('/admin/login');
     return;
   }
 
@@ -30,9 +30,9 @@ export async function EventsManager(container) {
           <h3 class="font-heading font-bold" style="font-size: 1.2rem;">Admin Portal</h3>
         </div>
         <nav class="flex flex-col gap-1">
-          <a href="#/admin" class="btn btn-outline w-full text-left">Dashboard</a>
-          <a href="#/admin/events" class="btn w-full text-left" style="background: var(--color-gold); color: white;">Manage Events</a>
-          <a href="#/admin/products" class="btn btn-outline w-full text-left">Manage Merch</a>
+          <a href="/admin" class="btn btn-outline w-full text-left">Dashboard</a>
+          <a href="/admin/events" class="btn w-full text-left" style="background: var(--color-gold); color: white;">Manage Events</a>
+          <a href="/admin/products" class="btn btn-outline w-full text-left">Manage Merch</a>
         </nav>
       </aside>
       
