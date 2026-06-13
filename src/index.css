@@ -1355,6 +1355,7 @@ body.no-scroll {
   }
 }
 
+/* Darker overlay so the frosted-glass form card stands out against the image */
 .register-hero::before {
   content: '';
   position: absolute;
@@ -1362,8 +1363,9 @@ body.no-scroll {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.55);
   z-index: 0;
+  pointer-events: none;
 }
 
 /* =========================================================
@@ -1461,5 +1463,242 @@ body.no-scroll {
     width: 100%;
     text-align: center;
     margin-top: 1rem;
+  }
+}
+
+/* =========================================================
+   MOBILE-ONLY REDESIGN (<=767px)
+   Locked near-opaque white navbar matching iOS status bar,
+   forced white section backgrounds, compact white menu,
+   white footer with clear separator, full-cover hero image.
+   ========================================================= */
+@media (max-width: 767px) {
+  /* --- Page background: WHITE on every section, overriding bg utility classes --- */
+  /* Exclude hero sections AND any section that sets its own inline background-image */
+  html,
+  body,
+  #app,
+  #page-content,
+  main {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+  }
+
+  main > section.bg-bg-alt:not([style*="background-image"]),
+  main > section.bg-white:not([style*="background-image"]),
+  main > section.gradient-bg:not([style*="background-image"]),
+  main > section[class*="bg-"]:not(.register-hero):not(.page-hero):not([style*="background-image"]) {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+  }
+
+  /* Force generic .section (no bg class) to white but preserve image-bearing heroes */
+  main > section.section:not(.register-hero):not(.page-hero):not([style*="background-image"]) {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+  }
+
+  /* Exception: hero-bg image must remain visible (it's a child of .page-hero) */
+  .page-hero,
+  .page-hero .hero-bg {
+    background: transparent;
+  }
+
+  .page-hero .hero-bg {
+    background-color: transparent !important;
+  }
+
+  /* --- Navbar: locked near-solid white matching iOS status bar (small opacity) --- */
+  .navbar,
+  .navbar.transparent,
+  .navbar.solid,
+  .navbar.solid.register-page-nav {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(14px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+    padding: 0.6rem 0 !important;
+  }
+
+  .navbar .nav-link,
+  .navbar .logo-text,
+  .navbar.transparent .nav-link,
+  .navbar.transparent .logo-text,
+  .navbar.solid.register-page-nav .nav-link,
+  .navbar.solid.register-page-nav .logo-text {
+    color: var(--color-text) !important;
+    text-shadow: none !important;
+  }
+
+  .navbar .cart-btn,
+  .navbar .mobile-toggle,
+  .navbar.transparent .cart-btn,
+  .navbar.transparent .mobile-toggle,
+  .navbar.solid.register-page-nav .cart-btn,
+  .navbar.solid.register-page-nav .mobile-toggle {
+    color: var(--color-text) !important;
+  }
+
+  /* --- Mobile dropdown: compact, white, clean separators --- */
+  .mobile-menu-dropdown {
+    background: rgba(255, 255, 255, 0.96) !important;
+    backdrop-filter: blur(20px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 12px !important;
+    top: 52px !important;
+    left: auto !important;
+    right: 0.75rem !important;
+    width: 200px !important;
+    max-height: 0 !important;
+  }
+
+  .mobile-menu-dropdown.open {
+    max-height: 240px !important;
+  }
+
+  .mobile-nav {
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  /* All menu items (including Join Family) styled uniformly: smaller, dark text */
+  .mobile-link,
+  .mobile-link-join {
+    display: block !important;
+    font-family: var(--font-body) !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: var(--color-text) !important;
+    background: transparent !important;
+    padding: 0.6rem 1rem !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    text-align: left !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+    letter-spacing: 0 !important;
+  }
+
+  /* Last item: no bottom divider */
+  .mobile-nav > a:last-child,
+  .mobile-link-join {
+    border-bottom: none !important;
+  }
+
+  .mobile-link:hover,
+  .mobile-link-join:hover {
+    background: rgba(0, 0, 0, 0.04) !important;
+    color: var(--color-text) !important;
+  }
+
+  /* Active item: subtle indicator, no green highlight */
+  .mobile-link.active-mobile-link {
+    background: rgba(0, 0, 0, 0.04) !important;
+    color: var(--color-text) !important;
+    font-weight: 600 !important;
+  }
+
+  /* --- Footer: white, clear separator from main content --- */
+  .footer.dark-section,
+  .footer {
+    background: #ffffff !important;
+    color: var(--color-text) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04);
+    margin-top: 2rem;
+  }
+
+  .footer .text-muted,
+  .footer .footer-copy,
+  .footer .footer-name {
+    color: var(--color-text-muted) !important;
+  }
+
+  .footer-socials a {
+    background: rgba(0, 0, 0, 0.06) !important;
+  }
+
+  .footer-socials a:hover {
+    background: var(--color-gold) !important;
+  }
+
+  /* Invert white social icons back to dark since footer is now white */
+  .footer-socials img {
+    filter: none !important;
+  }
+
+  .footer-socials a:hover img {
+    filter: brightness(0) invert(1) !important;
+  }
+
+  /* --- Home page hero: force image to cover full mobile section --- */
+  .page-hero {
+    height: var(--mobile-vh, 100vh) !important;
+    min-height: 100vh !important;
+    aspect-ratio: auto !important;
+    width: 100% !important;
+  }
+
+  .page-hero .hero-bg {
+    width: 100% !important;
+    height: 100% !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+  }
+
+  /* --- Home page Welcome section: keep only h2 + paragraph; hide quote, image, badge --- */
+  .welcome-section .welcome-quote,
+  .welcome-section .welcome-media {
+    display: none !important;
+  }
+
+  /* Single-column layout for the surviving welcome content */
+  .welcome-section .grid.grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* --- Mobile footer: compact size --- */
+  .footer.dark-section,
+  .footer {
+    padding: 0.5rem 0 !important;
+    margin-top: 1rem;
+  }
+
+  .footer .footer-row {
+    gap: 0.5rem !important;
+    padding: 0.25rem 0 !important;
+  }
+
+  .footer .footer-brand img {
+    height: 22px !important;
+  }
+
+  .footer .footer-name {
+    font-size: 0.8rem !important;
+  }
+
+  .footer .footer-socials {
+    gap: 0.4rem !important;
+  }
+
+  .footer .footer-socials a {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .footer .footer-socials img {
+    width: 11px !important;
+    height: 11px !important;
+  }
+
+  .footer .footer-copy {
+    font-size: 0.7rem !important;
+    margin-top: 0.5rem !important;
   }
 }

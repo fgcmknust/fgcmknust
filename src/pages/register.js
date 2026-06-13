@@ -5,8 +5,6 @@ import { mountTurnstile } from '../utils/turnstile.js';
 export async function Register(container) {
   const html = `
     <section class="section position-relative overflow-hidden register-hero" style="min-height: calc(100vh - 80px); display: flex; align-items: center;">
-      <div class="position-absolute" style="top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 0;"></div>
-
       <div class="container position-relative" style="z-index: 2;">
         <div class="grid grid-2 gap-4 items-center">
 
@@ -23,7 +21,7 @@ export async function Register(container) {
           </div>
 
           <div data-reveal="true" data-reveal-direction="left">
-            <div class="card p-4 shadow-lg" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
+            <div class="card p-4 shadow-lg" style="background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.25); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);">
               <form id="register-form" class="flex flex-col" novalidate autocomplete="on">
                 <div class="grid grid-2 gap-2 mb-2">
                   <div class="form-group mb-0">

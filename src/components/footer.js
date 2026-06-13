@@ -55,6 +55,9 @@ export function renderFooter(container) {
               <a href="${escapeHtml(churchInfo.socials.instagram)}" target="_blank" rel="noopener" class="social-btn" aria-label="Instagram">
                 <img src="/images/instagram.svg" alt="" style="width: 14px; height: 14px; filter: brightness(0) invert(1);" />
               </a>
+              <a href="${escapeHtml(churchInfo.socials.twitter)}" target="_blank" rel="noopener" class="social-btn" aria-label="X (Twitter)">
+                <img src="/images/x.svg" alt="" style="width: 14px; height: 14px; filter: brightness(0) invert(1);" />
+              </a>
               <a href="${escapeHtml(churchInfo.socials.youtube)}" target="_blank" rel="noopener" class="social-btn" aria-label="YouTube">
                 <img src="/images/youtube.svg" alt="" style="width: 14px; height: 14px; filter: brightness(0) invert(1);" />
               </a>
@@ -88,6 +91,9 @@ export function renderFooter(container) {
             </a>
             <a href="${escapeHtml(churchInfo.socials.instagram)}" target="_blank" rel="noopener" aria-label="Instagram">
               <img src="/images/instagram.svg" alt="" />
+            </a>
+            <a href="${escapeHtml(churchInfo.socials.twitter)}" target="_blank" rel="noopener" aria-label="X (Twitter)">
+              <img src="/images/x.svg" alt="" />
             </a>
             <a href="${escapeHtml(churchInfo.socials.youtube)}" target="_blank" rel="noopener" aria-label="YouTube">
               <img src="/images/youtube.svg" alt="" />
