@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="Full Gospel Campus Ministry — KNUST. Worship, events, devotionals, and merch for our campus family." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>Full Gospel Campus Ministry-KNUST</title>
+    <link rel="icon" type="image/png" href="/images/FGCI LOGO.png" />
+
+    <!-- Google Fonts: Playfair Display (headings) & Inter (body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+
+    <!-- Dynamic Viewport Height Cache (used by hero sections to avoid iOS URL-bar jumps) -->
+    <script>
+      (function() {
+        try {
+          var cached = localStorage.getItem('mobile_vh');
+          var vh = cached ? parseInt(cached, 10) : 0;
+          if (!vh || isNaN(vh)) {
+            vh = window.innerHeight;
+            localStorage.setItem('mobile_vh', String(vh));
+          }
+          document.documentElement.style.setProperty('--mobile-vh', vh + 'px');
+        } catch (e) { /* localStorage may be blocked; ignore */ }
+      })();
+    </script>
+
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="/src/index.css" />
+
+    <!-- GSAP & ScrollTrigger (defer so they don't block HTML parsing; execution order preserved) -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Paystack InlineJS v2 -->
+    <script defer src="https://js.paystack.co/v2/inline.js"></script>
+
+    <!-- Lucide Icons (pinned version — avoid surprises from @latest) -->
+    <script defer src="https://unpkg.com/lucide@0.469.0"></script>
+  </head>
+  <body>
+    <!-- App Mount Point -->
+    <div id="app"></div>
+
+    <!-- Main Entry Point (type=module already defers) -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "fgcm-church",
+  "pages_build_output_dir": "./dist",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "fgcm-db",
+      "database_id": "<YOUR_DATABASE_ID>",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "UPLOADS",
+      "bucket_name": "fgcm-uploads"
+    }
+  ]
+}
