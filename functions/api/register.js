@@ -27,7 +27,7 @@ export async function onRequestPost(context) {
   const captcha = await verifyTurnstile(data && data.captchaToken, env, request);
   if (!captcha.ok) return captchaFailedResponse(captcha.error);
 
-  const { first_name, middle_name, last_name, email, phone, gender, address, department } = data || {};
+  const { first_name, middle_name, last_name, email, phone, gender, date_of_birth, address, department } = data || {};
 
   if (!isValidName(first_name)) return Response.json({ error: 'Invalid first name' }, { status: 400 });
   if (!isOptionalName(middle_name)) return Response.json({ error: 'Invalid middle name' }, { status: 400 });
@@ -35,6 +35,7 @@ export async function onRequestPost(context) {
   if (!isValidEmail(email)) return Response.json({ error: 'Invalid email' }, { status: 400 });
   if (!isValidPhoneSimple(phone)) return Response.json({ error: 'Invalid phone number' }, { status: 400 });
   if (!isValidGender(gender)) return Response.json({ error: 'Invalid gender' }, { status: 400 });
+  if (!date_of_birth || !/^\d{4}-\d{2}-\d{2}$/.test(String(date_of_birth))) return Response.json({ error: 'Invalid date of birth' }, { status: 400 });
   if (!isPlainText(address, { min: 3, max: 500 })) return Response.json({ error: 'Invalid address' }, { status: 400 });
   if (!isValidDepartment(department)) return Response.json({ error: 'Invalid department' }, { status: 400 });
 
@@ -42,8 +43,8 @@ export async function onRequestPost(context) {
 
   try {
     const result = await DB.prepare(`
-      INSERT INTO members (id, first_name, middle_name, last_name, email, phone, gender, address, department)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO members (id, first_name, middle_name, last_name, email, phone, gender, date_of_birth, address, department)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id,
       sanitizeString(first_name, 120),
@@ -52,6 +53,7 @@ export async function onRequestPost(context) {
       sanitizeString(email, 254),
       sanitizeString(phone, 32),
       sanitizeString(gender, 32),
+      String(date_of_birth),
       sanitizeString(address, 500),
       sanitizeString(department, 200)
     ).run();

@@ -1,6 +1,6 @@
 export const eventsData = [
   {
-    id: "evt_001",
+    id: "0188b8e0-1234-7abc-8def-000000000001",
     title: "Keepers of the Flame",
     date: "2026-06-27T09:00:00Z",
     time: "9:00 AM",

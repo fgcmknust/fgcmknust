@@ -114,6 +114,15 @@ export const Validators = {
     const d = new Date(s);
     if (isNaN(d.getTime())) return 'Enter a valid date';
     return null;
+  },
+
+  date(value) {
+    const s = String(value || '').trim();
+    if (!s) return 'Date of birth is required';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return 'Enter a valid date';
+    const d = new Date(s + 'T00:00:00Z');
+    if (isNaN(d.getTime())) return 'Enter a valid date';
+    return null;
   }
 };
 

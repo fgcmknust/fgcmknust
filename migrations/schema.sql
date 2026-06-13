@@ -1,25 +1,20 @@
--- ==========================================
--- FGCM KEEPERS: COMBINED DATABASE SCHEMA
--- ==========================================
--- Complete schema with all tables, indexes, and seed data
--- Combines initial schema, security tables, and migration flags
+-- FGCM-KNUST Database Master Schema
+-- Comprehensive schema definition for all tables, indices, and initial data
+-- Version: 2.0 (consolidated from multiple migrations)
 
--- Rate-limit buckets for API protection
-CREATE TABLE IF NOT EXISTS rate_limits (
-  bucket TEXT PRIMARY KEY,
-  count INTEGER NOT NULL DEFAULT 0,
-  window_start INTEGER NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_rate_limits_window ON rate_limits(window_start);
-
--- Migration tracking table (for idempotency)
+-- ================================================================
+-- MIGRATION FLAGS TABLE
+-- Prevents accidental re-application of idempotent migrations
+-- ================================================================
 CREATE TABLE IF NOT EXISTS migration_flags (
   name TEXT PRIMARY KEY,
   applied_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
--- Members table: stores church member registrations
+-- ================================================================
+-- MEMBERS TABLE
+-- Stores church member registrations
+-- ================================================================
 CREATE TABLE IF NOT EXISTS members (
     id TEXT PRIMARY KEY,
     first_name TEXT NOT NULL,
@@ -35,10 +30,14 @@ CREATE TABLE IF NOT EXISTS members (
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_members_email ON members(email);
-CREATE INDEX idx_members_phone ON members(phone);
+CREATE INDEX IF NOT EXISTS idx_members_email ON members(email);
+CREATE INDEX IF NOT EXISTS idx_members_phone ON members(phone);
+CREATE INDEX IF NOT EXISTS idx_members_date_of_birth ON members(date_of_birth);
 
--- Purchases table: stores completed & pending merch orders
+-- ================================================================
+-- PURCHASES TABLE
+-- Stores completed & pending merchandise orders
+-- ================================================================
 CREATE TABLE IF NOT EXISTS purchases (
     id TEXT PRIMARY KEY,
     reference TEXT UNIQUE NOT NULL,
@@ -57,14 +56,18 @@ CREATE TABLE IF NOT EXISTS purchases (
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_purchases_email ON purchases(customer_email);
-CREATE INDEX idx_purchases_reference ON purchases(reference);
-CREATE INDEX idx_purchases_status ON purchases(status);
+CREATE INDEX IF NOT EXISTS idx_purchases_email ON purchases(customer_email);
+CREATE INDEX IF NOT EXISTS idx_purchases_reference ON purchases(reference);
+CREATE INDEX IF NOT EXISTS idx_purchases_status ON purchases(status);
 
--- Event Registrations table: stores registrations for specific events
+-- ================================================================
+-- EVENT REGISTRATIONS TABLE
+-- Stores registrations for specific events
+-- ================================================================
 CREATE TABLE IF NOT EXISTS event_registrations (
     id TEXT PRIMARY KEY,
     event_id TEXT NOT NULL,
+    event_name TEXT,
     first_name TEXT NOT NULL,
     middle_name TEXT,
     last_name TEXT NOT NULL,
@@ -74,10 +77,14 @@ CREATE TABLE IF NOT EXISTS event_registrations (
     UNIQUE(event_id, email)
 );
 
-CREATE INDEX idx_event_registrations_event_id ON event_registrations(event_id);
-CREATE INDEX idx_event_registrations_email ON event_registrations(email);
+CREATE INDEX IF NOT EXISTS idx_event_registrations_event_id ON event_registrations(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_registrations_email ON event_registrations(email);
 
--- Events table: dynamically managed events
+-- ================================================================
+-- EVENTS TABLE
+-- Dynamically managed events (created via admin API)
+-- Keep only "Keepers of the Flame" as the primary event
+-- ================================================================
 CREATE TABLE IF NOT EXISTS events (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
@@ -93,7 +100,10 @@ CREATE TABLE IF NOT EXISTS events (
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
--- Products table: dynamically managed store inventory
+-- ================================================================
+-- PRODUCTS TABLE
+-- Dynamically managed store inventory
+-- ================================================================
 CREATE TABLE IF NOT EXISTS products (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
@@ -106,24 +116,10 @@ CREATE TABLE IF NOT EXISTS products (
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed initial events
-INSERT INTO events (id, title, date, time, venue, description, image_url, category, is_featured, is_special, event_status) VALUES
-('0188b8e0-1234-7abc-8def-000000000001', 'Keepers of the Flame', '2026-06-27T09:00:00Z', '9:00 AM', 'AGCM Basement, Ayeduase', 'Join us for a powerful time of worship, the word, and impartation. This is our special anointing service spanning two days to equip you for the semester.', '/images/Laptop.jpg', 'Service', 1, 0, 'confirmed'),
-('0188b8e0-1234-7abc-8def-000000000002', 'Campus Prayer Walk', '2026-06-19T17:00:00Z', '5:00 PM - 7:00 PM', 'Starts at University Square', 'We are taking the gospel to the streets! Join us as we walk and pray through the campus, interceding for students and lecturers.', '/images/event-prayer.jpg', 'Outreach', 1, 0, 'confirmed'),
-('0188b8e0-1234-7abc-8def-000000000003', 'Youth Impact Night', '2026-06-26T18:00:00Z', '6:00 PM - 9:00 PM', 'Student Center, Room A', 'An evening of music, spoken word, and a relevant message tailored for young adults navigating campus life.', '/images/event-youth.jpg', 'Youth', 1, 0, 'confirmed'),
-('0188b8e0-1234-7abc-8def-000000000004', 'Mid-week Bible Study', '2026-06-17T18:30:00Z', '6:30 PM - 8:00 PM', 'Chapel Annexe', 'Dig deeper into the Word of God. We are currently studying the book of Romans. Interactive Q&A session included.', '/images/event-bible.jpg', 'Teaching', 0, 0, 'confirmed'),
-('0188b8e0-1234-7abc-8def-000000000005', 'Freshers'' Akwaaba Bash', '2026-07-05T16:00:00Z', '4:00 PM - 8:00 PM', 'Campus Gardens', 'A special welcome event for all incoming students. Free food, games, music, and an opportunity to meet the FGCM family.', '/images/event-welcome.jpg', 'Social', 0, 0, 'confirmed');
-
--- Seed initial products
-INSERT INTO products (id, name, price, description, image_url, sizes_json, category, is_featured) VALUES
-('0188b8e0-1234-7abc-8def-000000000010', 'FGCM Classic Logo T-Shirt', 85, 'Show your campus pride with our classic FGCM logo t-shirt. Made from 100% premium cotton for maximum comfort during services and casual days on campus.', '/images/merch-tshirt-black.jpg', '["S", "M", "L", "XL", "XXL"]', 'T-Shirts', 1),
-('0188b8e0-1234-7abc-8def-000000000011', 'Premium ''Faith'' Hoodie', 150, 'Stay warm during late-night study sessions or early morning prayers. Features a minimalist ''FAITH'' typography design and a soft fleece interior.', '/images/merch-hoodie.jpg', '["S", "M", "L", "XL"]', 'Hoodies', 1),
-('0188b8e0-1234-7abc-8def-000000000012', 'Campus Ministry Dad Hat', 45, 'An adjustable, embroidered cap perfect for sunny days or bad hair days. Simple, stylish, and comfortable.', '/images/merch-cap.jpg', '["One Size"]', 'Accessories', 1),
-('0188b8e0-1234-7abc-8def-000000000013', 'Grace Over Grind Oversized Tee', 95, 'Trendy oversized fit t-shirt featuring the popular ''Grace Over Grind'' manifesto on the back. Heavyweight cotton for a premium streetwear feel.', '/images/merch-oversized.jpg', '["M", "L", "XL"]', 'T-Shirts', 1),
-('0188b8e0-1234-7abc-8def-000000000014', 'FGCM Custom Journal', 35, 'Take sermon notes in style. A faux-leather bound journal with 200 lined pages and a ribbon bookmark.', '/images/merch-journal.jpg', '["Standard"]', 'Accessories', 0),
-('0188b8e0-1234-7abc-8def-000000000015', 'Worship Team Zip-Up', 130, 'Lightweight zip-up hoodie, perfect for layering. Features the FGCM emblem on the left chest.', '/images/merch-zipup.jpg', '["S", "M", "L", "XL", "XXL"]', 'Hoodies', 0);
-
--- Scriptures table: stores daily devotionals
+-- ================================================================
+-- SCRIPTURES TABLE
+-- Stores daily devotional scriptures (500 verses across all categories)
+-- ================================================================
 CREATE TABLE IF NOT EXISTS scriptures (
     id TEXT PRIMARY KEY,
     reference TEXT NOT NULL,
@@ -133,8 +129,34 @@ CREATE TABLE IF NOT EXISTS scriptures (
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed curated daily devotional scriptures with UUIDv7
-INSERT INTO scriptures (id, reference, text, version, category) VALUES
+-- ================================================================
+-- RATE LIMITS TABLE
+-- Stores rate-limit buckets for API endpoints
+-- One row per (action + identifier) pair
+-- window_start is unix-ms; rows older than the limiter window are reset on next hit
+-- ================================================================
+CREATE TABLE IF NOT EXISTS rate_limits (
+  bucket TEXT PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 0,
+  window_start INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_rate_limits_window ON rate_limits(window_start);
+
+-- ================================================================
+-- INITIAL SEED DATA
+-- ================================================================
+
+-- Seed the primary event: "Keepers of the Flame"
+INSERT OR IGNORE INTO events (id, title, date, time, venue, description, image_url, category, is_featured, is_special, event_status) VALUES
+('0188b8e0-1234-7abc-8def-000000000001', 'Keepers of the Flame', '2026-06-27T09:00:00Z', '9:00 AM', 'AGCM Basement, Ayeduase', '<p><strong>Keepers of the Flame</strong> is a dynamic, semester-opening revival hosted by the <strong>FGCM-KNUST Campus Ministry</strong> to ignite students'' spiritual fervor and usher them into the new academic year with purpose and power.</p><p><strong>Core Highlights</strong></p><p><strong>The Vision:</strong> Inspired by the mandate to keep the altar fire burning, it shakes off academic break lethargy and realigns students with their faith before classes demand their full attention.</p><p><strong>The Experience:</strong> A powerful night featuring intimate, unhurried worship, a sharp prophetic charge tailored to campus life, and intense altar prayer for academic, mental, and spiritual resilience.</p>', '/images/Laptop.jpg', 'Service', 1, 0, 'confirmed');
+
+-- Seed core merchandise products (Keepers of The Flame T-shirt)
+INSERT OR IGNORE INTO products (id, name, price, description, image_url, sizes_json, category, is_featured) VALUES
+('0188b8e0-1234-7abc-8def-000000000010', 'Keepers of The Flame T-shirt', 60, 'T-shirt used for the Keepers of the Flame event.', '/images/merch.jpg', '["S", "M", "L", "XL", "XXL", "3XL"]', 'T-Shirts', 1);
+
+-- Seed curated devotional scriptures (50 most impactful verses)
+INSERT OR IGNORE INTO scriptures (id, reference, text, version, category) VALUES
 ('0188b8e0-1234-7abc-8def-100000000001', 'Jeremiah 29:11', 'For I know the thoughts that I think toward you, says the LORD, thoughts of peace and not of evil, to give you a future and a hope.', 'NKJV', 'Hope'),
 ('0188b8e0-1234-7abc-8def-100000000002', 'Philippians 4:13', 'I can do all things through Christ who strengthens me.', 'NKJV', 'Strength'),
 ('0188b8e0-1234-7abc-8def-100000000003', 'Proverbs 3:5-6', 'Trust in the LORD with all your heart, And lean not on your own understanding; In all your ways acknowledge Him, And He shall direct your paths.', 'NKJV', 'Guidance'),
@@ -143,7 +165,7 @@ INSERT INTO scriptures (id, reference, text, version, category) VALUES
 ('0188b8e0-1234-7abc-8def-100000000006', 'Joshua 1:9', 'Have I not commanded you? Be strong and of good courage; do not be afraid, nor be dismayed, for the LORD your God is with you wherever you go.', 'NKJV', 'Courage'),
 ('0188b8e0-1234-7abc-8def-100000000007', 'Matthew 11:28', 'Come to Me, all you who labor and are heavy laden, and I will give you rest.', 'NKJV', 'Rest'),
 ('0188b8e0-1234-7abc-8def-100000000008', 'Psalm 23:1', 'The LORD is my shepherd; I shall not want.', 'NKJV', 'Provision'),
-('0188b8e0-1234-7abc-8def-100000000009', 'Lamentations 3:22-23', 'Through the LORD’s mercies we are not consumed, Because His compassions fail not. They are new every morning; Great is Your faithfulness.', 'NKJV', 'Mercy'),
+('0188b8e0-1234-7abc-8def-100000000009', 'Lamentations 3:22-23', 'Through the LORD''s mercies we are not consumed, Because His compassions fail not. They are new every morning; Great is Your faithfulness.', 'NKJV', 'Mercy'),
 ('0188b8e0-1234-7abc-8def-100000000010', '2 Corinthians 5:17', 'Therefore, if anyone is in Christ, he is a new creation; old things have passed away; behold, all things have become new.', 'NKJV', 'Transformation'),
 ('0188b8e0-1234-7abc-8def-100000000011', 'Ephesians 2:8-9', 'For by grace you have been saved through faith, and that not of yourselves; it is the gift of God, not of works, lest anyone should boast.', 'NKJV', 'Grace'),
 ('0188b8e0-1234-7abc-8def-100000000012', 'Hebrews 11:1', 'Now faith is the substance of things hoped for, the evidence of things not seen.', 'NKJV', 'Faith'),
@@ -635,3 +657,9 @@ INSERT INTO scriptures (id, reference, text, version, category) VALUES
 ('0188b8e0-1234-7abc-8def-100000000498', 'Ephesians 6:18', 'Praying always with all prayer and supplication in the Spirit, being watchful to this end with all perseverance and supplication for all the saints.', 'NKJV', 'Prayer'),
 ('0188b8e0-1234-7abc-8def-100000000499', 'Philippians 1:9', 'And this I pray, that your love may abound still more and more in knowledge and all discernment.', 'NKJV', 'Love'),
 ('0188b8e0-1234-7abc-8def-100000000500', 'Philippians 1:27', 'Only let your conduct be worthy of the gospel of Christ, so that whether I come and see you or am absent, I may hear of your affairs, that you stand fast in one spirit...', 'NKJV', 'Conduct');
+
+-- ================================================================
+-- MIGRATION FLAGS
+-- ================================================================
+
+INSERT OR IGNORE INTO migration_flags (name) VALUES ('pesewas_to_cedis_v1');

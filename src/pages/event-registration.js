@@ -174,8 +174,11 @@ export async function EventRegistration(container) {
     }
 
     const values = validation.getValues();
+    const selectedEvent = allEvents.find(e => e.id === values.event_id);
+    const eventName = selectedEvent ? selectedEvent.title : '';
     const payload = {
       event_id: sanitizeInputString(values.event_id, 128),
+      event_name: sanitizeInputString(eventName, 256),
       first_name: sanitizeInputString(values.first_name, 120),
       middle_name: sanitizeInputString(values.middle_name, 120),
       last_name: sanitizeInputString(values.last_name, 120),

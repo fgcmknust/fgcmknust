@@ -96,7 +96,7 @@ export async function Events(container) {
             <p class="flex gap-1 items-center mb-0"><i data-lucide="clock" class="icon-sm"></i> <span>${escapeHtml(event.time || 'TBA')}</span></p>
             <p class="flex gap-1 items-center mb-0"><i data-lucide="map-pin" class="icon-sm"></i> <span>${venueHTML}</span></p>
           </div>
-          <div class="text-small text-muted" style="line-height: 1.6; margin-bottom: 1rem;">${escapeHtml(event.description)}</div>
+          <div class="text-small text-muted" style="line-height: 1.6; margin-bottom: 1rem;">${event.description}</div>
           <div class="flex gap-1 mt-auto justify-end">
             <button class="btn btn-outline btn-sm" onclick="window.closeModal()">Close</button>
             <a href="#/event-registration?eventId=${encodeURIComponent(event.id)}" onclick="window.closeModal()" class="btn btn-gold btn-sm">Register Now</a>

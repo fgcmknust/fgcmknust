@@ -62,6 +62,13 @@ export async function Register(container) {
                   </div>
                 </div>
 
+                <div class="grid grid-2 gap-2 mb-2">
+                  <div class="form-group mb-0">
+                    <label class="form-label text-small font-semibold text-white">Date of Birth *</label>
+                    <input type="date" name="date_of_birth" class="form-control" style="background: transparent; color: white; border: 1px solid rgba(255, 255, 255, 0.4);" required>
+                  </div>
+                </div>
+
                 <div class="form-group mb-2">
                   <label class="form-label text-small font-semibold text-white">Residential Address / Hostel *</label>
                   <input type="text" name="address" class="form-control" maxlength="500" autocomplete="street-address" placeholder="e.g. Hall 7, Room 42B" style="background: transparent; color: white; border: 1px solid rgba(255, 255, 255, 0.4);" required>
@@ -107,6 +114,7 @@ export async function Register(container) {
     email: Validators.email,
     phone: Validators.phoneGhana,
     gender: Validators.oneOf(['Male', 'Female']),
+    date_of_birth: Validators.date,
     address: Validators.address,
     department: Validators.oneOf(['Choir', 'Ushering', 'Media', 'Prayer', 'Evangelism'])
   });
@@ -134,6 +142,7 @@ export async function Register(container) {
       email: sanitizeInputString(values.email, 254),
       phone: sanitizeInputString(values.phone, 32),
       gender: sanitizeInputString(values.gender, 32),
+      date_of_birth: values.date_of_birth ? String(values.date_of_birth) : null,
       address: sanitizeInputString(values.address, 500),
       department: sanitizeInputString(values.department, 200),
       captchaToken

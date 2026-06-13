@@ -27,7 +27,7 @@ export async function onRequestPost(context) {
   const captcha = await verifyTurnstile(data && data.captchaToken, env, request);
   if (!captcha.ok) return captchaFailedResponse(captcha.error);
 
-  const { event_id, first_name, middle_name, last_name, email, phone } = data || {};
+  const { event_id, event_name, first_name, middle_name, last_name, email, phone } = data || {};
 
   if (typeof event_id !== 'string' || event_id.length === 0 || event_id.length > 128) {
     return Response.json({ error: 'Invalid event' }, { status: 400 });
@@ -45,11 +45,12 @@ export async function onRequestPost(context) {
   const id = generateUUIDv7();
   try {
     const result = await DB.prepare(`
-      INSERT INTO event_registrations (id, event_id, first_name, middle_name, last_name, email, phone)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO event_registrations (id, event_id, event_name, first_name, middle_name, last_name, email, phone)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id,
       sanitizeString(event_id, 128),
+      sanitizeString(event_name, 256) || null,
       sanitizeString(first_name, 120),
       sanitizeString(middle_name, 120) || null,
       sanitizeString(last_name, 120),
