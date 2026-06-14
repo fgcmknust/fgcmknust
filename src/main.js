@@ -74,6 +74,18 @@ const routes = {
   }
 };
 
+// Register the service worker once the page is idle so it never competes with
+// the first paint or the LCP image download. On repeat visits the SW serves
+// hashed assets and images from cache, giving an instant load even on 3G.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    // Wait an extra tick so the SW install doesn't fight the hero image fetch.
+    setTimeout(() => {
+      navigator.serviceWorker.register('/sw.js').catch(() => { /* SW is a progressive enhancement */ });
+    }, 0);
+  });
+}
+
 // Start Application
 document.addEventListener('DOMContentLoaded', () => {
   installNavStateDelegate();

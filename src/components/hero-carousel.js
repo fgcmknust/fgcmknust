@@ -8,12 +8,18 @@ export function renderHeroCarousel(container, events) {
     <div class="hero-carousel" style="position: relative; width: 100%; height: 100vh; min-height: 600px; overflow: hidden; background: #000;">
       <!-- Slides -->
       <div class="carousel-track" style="display: flex; height: 100%; transition: transform 0.5s ease-in-out;">
-        ${events.map(ev => {
+        ${events.map((ev, idx) => {
     const isAnticipatory = ev.eventStatus === 'anticipatory';
+    const isFirst = idx === 0;
+    // First slide is the LCP candidate — load eagerly with high priority.
+    // Remaining slides stay lazy/async so they don't compete for bandwidth.
+    const imgPriorityAttrs = isFirst
+      ? 'fetchpriority="high" decoding="sync" loading="eager"'
+      : 'fetchpriority="low" decoding="async" loading="lazy"';
 
     return `
             <div class="carousel-slide" style="min-width: 100%; height: 100%; position: relative;">
-              <img src="${escapeHtml(ev.image)}" alt="${escapeHtml(ev.title)}" decoding="async" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;">
+              <img src="${escapeHtml(ev.image)}" alt="${escapeHtml(ev.title)}" ${imgPriorityAttrs} style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;">
               <div class="carousel-content position-absolute flex flex-col justify-center items-center text-center p-4" 
                    style="top: 0; left: 0; width: 100%; height: 100%; z-index: 2;">
                 

@@ -111,6 +111,7 @@ CREATE TABLE IF NOT EXISTS products (
   description TEXT NOT NULL,
   image_url TEXT NOT NULL,
   sizes_json TEXT NOT NULL,
+  colors_json TEXT NOT NULL DEFAULT '[]',
   category TEXT NOT NULL,
   is_featured INTEGER DEFAULT 0,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
@@ -152,8 +153,8 @@ INSERT OR IGNORE INTO events (id, title, date, time, venue, description, image_u
 ('0188b8e0-1234-7abc-8def-000000000001', 'Keepers of the Flame', '2026-06-27T09:00:00Z', '9:00 AM', 'AGCM Basement, Ayeduase', '<p><strong>Keepers of the Flame</strong> is a dynamic, semester-opening revival hosted by the <strong>FGCM-KNUST Campus Ministry</strong> to ignite students'' spiritual fervor and usher them into the new academic year with purpose and power.</p><p><strong>Core Highlights</strong></p><p><strong>The Vision:</strong> Inspired by the mandate to keep the altar fire burning, it shakes off academic break lethargy and realigns students with their faith before classes demand their full attention.</p><p><strong>The Experience:</strong> A powerful night featuring intimate, unhurried worship, a sharp prophetic charge tailored to campus life, and intense altar prayer for academic, mental, and spiritual resilience.</p>', '/images/Laptop.jpg', 'Service', 1, 0, 'confirmed');
 
 -- Seed core merchandise products (Keepers of The Flame T-shirt)
-INSERT OR IGNORE INTO products (id, name, price, description, image_url, sizes_json, category, is_featured) VALUES
-('0188b8e0-1234-7abc-8def-000000000010', 'Keepers of The Flame T-shirt', 60, 'T-shirt used for the Keepers of the Flame event.', '/images/merch.jpg', '["S", "M", "L", "XL", "XXL", "3XL"]', 'T-Shirts', 1);
+INSERT OR IGNORE INTO products (id, name, price, description, image_url, sizes_json, colors_json, category, is_featured) VALUES
+('0188b8e0-1234-7abc-8def-000000000010', 'Keepers of The Flame T-shirt', 60, 'T-shirt used for the Keepers of the Flame event.', '/images/merch.jpg', '["S", "M", "L", "XL", "XXL", "3XL"]', '["Black", "White", "Light Green"]', 'T-Shirts', 1);
 
 -- Seed curated devotional scriptures (50 most impactful verses)
 INSERT OR IGNORE INTO scriptures (id, reference, text, version, category) VALUES

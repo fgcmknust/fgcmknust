@@ -15,8 +15,12 @@ function parsePayload(data) {
     ? data.sizes.slice(0, 20).map(s => sanitizeString(s, 32)).filter(Boolean)
     : [];
   const sizesJson = JSON.stringify(sizes);
+  const colors = Array.isArray(data.colors)
+    ? data.colors.slice(0, 20).map(c => sanitizeString(c, 32)).filter(Boolean)
+    : [];
+  const colorsJson = JSON.stringify(colors);
   const isFeatured = data.isFeatured ? 1 : 0;
-  return { name, description, image, category, price, sizesJson, isFeatured };
+  return { name, description, image, category, price, sizesJson, colorsJson, isFeatured };
 }
 
 function validatePayload(p) {
@@ -37,11 +41,11 @@ export async function onRequestPost(context) {
     if (err) return new Response(JSON.stringify({ error: err }), { status: 400 });
 
     await env.DB.prepare(
-      `INSERT INTO products (id, name, price, description, image_url, sizes_json, category, is_featured)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO products (id, name, price, description, image_url, sizes_json, colors_json, category, is_featured)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       id, payload.name, payload.price, payload.description, payload.image,
-      payload.sizesJson, payload.category, payload.isFeatured
+      payload.sizesJson, payload.colorsJson, payload.category, payload.isFeatured
     ).run();
 
     return new Response(JSON.stringify({ success: true, id }), { headers: { 'Content-Type': 'application/json' } });
@@ -63,10 +67,10 @@ export async function onRequestPut(context) {
     if (err) return new Response(JSON.stringify({ error: err }), { status: 400 });
 
     await env.DB.prepare(
-      `UPDATE products SET name = ?, price = ?, description = ?, image_url = ?, sizes_json = ?, category = ?, is_featured = ? WHERE id = ?`
+      `UPDATE products SET name = ?, price = ?, description = ?, image_url = ?, sizes_json = ?, colors_json = ?, category = ?, is_featured = ? WHERE id = ?`
     ).bind(
       payload.name, payload.price, payload.description, payload.image,
-      payload.sizesJson, payload.category, payload.isFeatured, id
+      payload.sizesJson, payload.colorsJson, payload.category, payload.isFeatured, id
     ).run();
 
     return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });

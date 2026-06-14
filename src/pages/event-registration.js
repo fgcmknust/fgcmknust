@@ -70,7 +70,7 @@ export async function EventRegistration(container) {
       </div>
     `;
 
-    const defaultBgImage = '/images/Registration.jpg';
+    const defaultBgImage = '/images/Regis.jpg';
     sectionStyle += ` background-image: url('${defaultBgImage}'); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: scroll;`;
     overlayHTML = `<div class="position-absolute" style="top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); z-index: 1;"></div>`;
   }

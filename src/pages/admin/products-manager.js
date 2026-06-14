@@ -76,7 +76,12 @@ export async function ProductsManager(container) {
               <label>Sizes (comma separated)</label>
               <input type="text" id="product-sizes" class="form-control" placeholder="S, M, L, XL">
             </div>
-            
+
+            <div class="form-group">
+              <label>Colours (comma separated)</label>
+              <input type="text" id="product-colors" class="form-control" placeholder="Black, White, Light Green">
+            </div>
+
             <div class="form-group">
               <label>Description *</label>
               <textarea id="product-description" class="form-control" rows="3" required></textarea>
@@ -215,12 +220,16 @@ export async function ProductsManager(container) {
     const sizesStr = document.getElementById('product-sizes').value;
     const sizesArr = sizesStr.split(',').map(s => sanitizeInputString(s, 32)).filter(Boolean).slice(0, 20);
 
+    const colorsStr = document.getElementById('product-colors').value;
+    const colorsArr = colorsStr.split(',').map(c => sanitizeInputString(c, 32)).filter(Boolean).slice(0, 20);
+
     const payload = {
       id: sanitizeInputString(document.getElementById('product-id').value, 128) || undefined,
       name: sanitizeInputString(document.getElementById('product-name').value, 200),
       price: document.getElementById('product-price').value,
       category: sanitizeInputString(document.getElementById('product-category').value, 100),
       sizes: sizesArr,
+      colors: colorsArr,
       description: sanitizeInputString(document.getElementById('product-description').value, 2000),
       image: imageUrl,
       isFeatured: document.getElementById('product-is-featured').checked
@@ -263,6 +272,7 @@ export async function ProductsManager(container) {
     document.getElementById('product-category').value = p.category;
     document.getElementById('product-description').value = p.description;
     document.getElementById('product-sizes').value = p.sizes ? p.sizes.join(', ') : '';
+    document.getElementById('product-colors').value = p.colors ? p.colors.join(', ') : '';
     document.getElementById('product-existing-image').value = p.image;
     document.getElementById('product-is-featured').checked = p.isFeatured;
     

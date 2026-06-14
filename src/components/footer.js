@@ -11,7 +11,7 @@ export function renderFooter(container) {
 
           <div class="footer-col about">
             <div class="flex items-center gap-1" style="flex-wrap: wrap; margin-bottom: 0.5rem;">
-              <img src="/images/FGCI LOGO.png" alt="FGCM-KNUST Logo" style="height: 30px; width: auto; object-fit: contain;" />
+              <img src="/images/FGCI LOGO.png" alt="FGCM-KNUST Logo" width="30" height="30" decoding="async" loading="lazy" style="height: 30px; width: auto; object-fit: contain;" />
               <span class="font-heading font-bold" style="font-size: 1.25rem; color: var(--color-gold);">${escapeHtml(churchInfo.shortName)}</span>
             </div>
             <p class="text-muted text-small">${escapeHtml(churchInfo.tagline)}</p>
@@ -81,7 +81,7 @@ export function renderFooter(container) {
       <div class="container footer-compact">
         <div class="footer-row">
           <div class="footer-brand">
-            <img src="/images/FGCI LOGO.png" alt="${escapeHtml(churchInfo.shortName)} Logo" />
+            <img src="/images/FGCI LOGO.png" alt="${escapeHtml(churchInfo.shortName)} Logo" width="30" height="30" decoding="async" loading="lazy" />
             <span class="footer-name">${escapeHtml(churchInfo.shortName)}</span>
           </div>
 

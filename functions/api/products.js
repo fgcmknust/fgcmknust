@@ -1,16 +1,31 @@
+// Parse a JSON-encoded array column safely. If the column is missing,
+// null, or malformed, fall back to an empty array — never returns undefined
+// (which would template-literal into the literal string "undefined" on the
+// product page color picker).
+function parseJsonArray(value) {
+  if (value == null) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function onRequestGet(context) {
   const { env } = context;
 
   try {
     const { results } = await env.DB.prepare(`SELECT * FROM products ORDER BY created_at DESC`).all();
-    
+
     const formattedProducts = results.map(row => ({
       id: row.id,
       name: row.name,
       price: row.price,
       description: row.description,
       image: row.image_url,
-      sizes: JSON.parse(row.sizes_json),
+      sizes: parseJsonArray(row.sizes_json),
+      colors: parseJsonArray(row.colors_json),
       category: row.category,
       isFeatured: row.is_featured === 1
     }));

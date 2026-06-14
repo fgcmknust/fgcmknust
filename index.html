@@ -21,6 +21,33 @@
     <link rel="preconnect" href="https://api.paystack.co" />
     <link rel="dns-prefetch" href="https://challenges.cloudflare.com" />
 
+    <!--
+      Route-conditional hero preload.
+      Cloudflare Web Analytics flagged poor LCP (P75 5.1s) on /event-registration and / —
+      the hero images were CSS background-images, so the browser only discovered them
+      AFTER the JS bundle parsed and routed. Hint the browser during HTML parse instead.
+    -->
+    <script>
+      (function () {
+        try {
+          var path = location.pathname.replace(/\/+$/, '') || '/';
+          var heroByRoute = {
+            '/event-registration': '/images/Regis.jpg',
+            '/register': '/images/Regis.jpg'
+          };
+          var hero = heroByRoute[path];
+          if (hero) {
+            var link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'image';
+            link.href = hero;
+            link.setAttribute('fetchpriority', 'high');
+            document.head.appendChild(link);
+          }
+        } catch (e) { /* preload is a hint; ignore failures */ }
+      })();
+    </script>
+
     <!-- Dynamic Viewport Height Cache (used by hero sections to avoid iOS URL-bar jumps) -->
     <script>
       (function() {

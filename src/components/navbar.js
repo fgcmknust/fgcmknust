@@ -8,7 +8,7 @@ export function renderNavbar(container) {
     <header id="main-nav" class="navbar transparent">
       <div class="container flex justify-between items-center">
         <a href="/" class="logo flex items-center gap-1">
-          <img src="/images/FGCI LOGO.png" alt="FGCM-KNUST Logo" style="height: 40px; width: auto; object-fit: contain;" />
+          <img src="/images/FGCI LOGO.png" alt="FGCM-KNUST Logo" width="40" height="40" decoding="async" fetchpriority="low" style="height: 40px; width: auto; object-fit: contain;" />
           <span class="logo-text">${churchInfo.shortName}</span>
         </a>
         

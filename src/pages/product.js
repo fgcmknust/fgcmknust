@@ -69,10 +69,11 @@ export async function Product(container) {
               </div>
             </div>
 
+            ${(product.colors && product.colors.length > 0) ? `
             <div class="form-group mb-3">
               <label class="form-label font-bold">Choose Colour</label>
               <div class="flex gap-1 flex-wrap">
-                ${product.colors && product.colors.map((col, i) => `
+                ${product.colors.map((col, i) => `
                   <button class="color-btn btn btn-outline ${i===0 ? 'border-gold text-gold bg-gold-light opacity-10' : ''}"
                           data-color="${escapeHtml(col)}" style="border-radius: var(--radius-sm); min-width: 3rem;">
                     ${escapeHtml(col)}
@@ -80,6 +81,7 @@ export async function Product(container) {
                 `).join('')}
               </div>
             </div>
+            ` : ''}
             
             <div class="form-group mb-4">
               <label class="form-label font-bold">Quantity</label>
