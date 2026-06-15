@@ -476,6 +476,11 @@ export async function CheckoutManual(container) {
         showToast(data.error || 'Could not submit your payment. Please try again.', 'error');
         if (captcha && captcha.reset) captcha.reset();
         setBtnLoading(false);
+        // If the server says the cart is stale, bounce the user back to /cart
+        // where the prune logic runs automatically.
+        if (data.code === 'STALE_CART') {
+          setTimeout(() => window.appNavigate('/cart'), 1500);
+        }
         return;
       }
 

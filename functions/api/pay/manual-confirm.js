@@ -20,7 +20,9 @@ import {
 } from '../_validation.js';
 import { rateLimit, tooManyRequests, getClientIp } from '../_rate_limit.js';
 import { verifyTurnstile, captchaFailedResponse } from '../_turnstile.js';
-import { computeChargeBreakdown } from '../_fees.js';
+// computeChargeBreakdown intentionally NOT imported here — the manual MoMo
+// flow charges the raw cart subtotal only (no processing fee), so the amount
+// stored in `purchases.amount` is exactly what the customer paid via MoMo.
 
 const MAX_PROOF_BYTES = 8 * 1024 * 1024;
 const ALLOWED_EXT = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp']);
@@ -60,21 +62,32 @@ async function priceCart(DB, items) {
   ).bind(...ids).all();
 
   const priceById = new Map((results || []).map(r => [r.id, Number(r.price)]));
+  const unknownIds = [];
   let total = 0;
   for (const id of ids) {
     const price = priceById.get(id);
     if (price === undefined || !Number.isFinite(price) || price < 0) {
-      return { ok: false, error: 'Unknown product in cart' };
+      unknownIds.push(id);
+      continue;
     }
     total += price * qtyById.get(id);
+  }
+  if (unknownIds.length > 0) {
+    // Log to help diagnose (showed up most often as a never-seeded prod DB).
+    console.warn('priceCart: unknown product ids', JSON.stringify(unknownIds));
+    return {
+      ok: false,
+      error: 'One or more items in your cart are no longer available. Please return to your cart and try again.',
+      code: 'STALE_CART'
+    };
   }
   total = Math.round(total * 100) / 100;
   if (total <= 0) return { ok: false, error: 'Computed cart total is zero' };
   return { ok: true, total };
 }
 
-function badRequest(error, status = 400) {
-  return new Response(JSON.stringify({ error }), {
+function badRequest(error, status = 400, extra = {}) {
+  return new Response(JSON.stringify({ error, ...extra }), {
     status,
     headers: { 'Content-Type': 'application/json' }
   });
@@ -141,9 +154,12 @@ export async function onRequestPost(context) {
   if (itemsSan.length === 0) return badRequest('Cart is empty');
 
   const pricing = await priceCart(DB, itemsSan);
-  if (!pricing.ok) return badRequest(pricing.error);
+  if (!pricing.ok) {
+    return badRequest(pricing.error, 400, pricing.code ? { code: pricing.code } : {});
+  }
 
-  const { subtotal: subtotalVal, fee: feeVal, total: amountVal } = computeChargeBreakdown(pricing.total);
+  // Manual MoMo: customer pays the cart subtotal exactly — no fee is added.
+  const amountVal = pricing.total;
 
   // ---- Persist screenshot to R2 ---------------------------------------------
   const filename = `uploads/payments/${crypto.randomUUID()}.${ext}`;
@@ -197,8 +213,6 @@ export async function onRequestPost(context) {
   return new Response(JSON.stringify({
     status: 'success',
     reference,
-    subtotal: subtotalVal,
-    fee: feeVal,
     amount: amountVal
   }), {
     headers: { 'Content-Type': 'application/json' }

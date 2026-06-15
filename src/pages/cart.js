@@ -10,6 +10,30 @@ import { mountTurnstile } from '../utils/turnstile.js'; // eslint-disable-line n
 import { computeChargeBreakdown } from '../utils/fees.js';
 
 export async function Cart(container) {
+  // Before rendering, drop any cart items whose product ID is no longer in the
+  // live catalogue. Without this, a stale localStorage entry (admin deleted
+  // the product, customer cleared the wrong row, etc.) causes the server-side
+  // price recompute on /api/pay/manual-confirm to reject the whole order with
+  // "Unknown product in cart".
+  try {
+    const res = await fetch('/api/products');
+    if (res.ok) {
+      const apiProducts = await res.json();
+      if (Array.isArray(apiProducts) && apiProducts.length > 0) {
+        const validIds = new Set(apiProducts.map((p) => p && p.id).filter(Boolean));
+        const before = CartStore.getItems();
+        const pruned = before.filter((it) => validIds.has(it.id));
+        if (pruned.length !== before.length) {
+          CartStore.saveItems(pruned);
+          showToast('Some items in your cart are no longer available and have been removed.', 'info');
+        }
+      }
+    }
+  } catch (e) {
+    // Network failure — leave the cart untouched; manual-confirm will surface
+    // any stale-id problem and the user can retry once they're back online.
+  }
+
   const items = CartStore.getItems();
 
   if (items.length === 0) {
