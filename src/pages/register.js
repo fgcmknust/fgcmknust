@@ -117,7 +117,11 @@ export async function Register(container) {
     department: Validators.oneOf(['Choir', 'Ushering', 'Media', 'Prayer', 'Evangelism'])
   });
 
-  const captcha = await mountTurnstile(document.getElementById('register-captcha'), { theme: 'dark' });
+  // Mount Turnstile in the background — do NOT await here. Cloudflare Web
+  // Analytics flagged /register at P75 = 37s because the page render was
+  // blocked waiting for challenges.cloudflare.com on slow 3G connections.
+  // The promise is awaited inside submit, by which time it has long resolved.
+  const captchaPromise = mountTurnstile(document.getElementById('register-captcha'), { theme: 'dark' });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -127,6 +131,7 @@ export async function Register(container) {
     }
 
     const values = validation.getValues();
+    const captcha = await captchaPromise;
     const captchaToken = captcha ? await captcha.getToken() : null;
     if (captcha && captcha.enabled && !captchaToken) {
       showToast('Please complete the CAPTCHA.', 'error');
@@ -168,12 +173,12 @@ export async function Register(container) {
         } else {
           showToast(result.error || 'Registration failed. Please try again.', 'error');
         }
-        if (captcha) captcha.reset();
+        if (captcha && captcha.reset) captcha.reset();
       }
     } catch (err) {
       console.error(err);
       showToast('A network error occurred. Please try again.', 'error');
-      if (captcha) captcha.reset();
+      if (captcha && captcha.reset) captcha.reset();
     } finally {
       submitBtn.innerHTML = originalBtnHTML;
       submitBtn.disabled = false;

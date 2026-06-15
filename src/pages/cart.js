@@ -2,7 +2,11 @@ import { CartStore } from '../utils/cart-store.js';
 import { formatGHS, escapeHtml } from '../utils/helpers.js';
 import { showToast } from '../components/toast.js';
 import { attachValidation, Validators, sanitizeInputString } from '../utils/validation.js';
-import { mountTurnstile } from '../utils/turnstile.js';
+// NOTE: Turnstile + Paystack integration left in the file but disabled so we
+// can re-enable card / online payments later without rewriting from scratch.
+// The current flow collects details on this page and continues to
+// /checkout-manual where the customer pays via MoMo and uploads a proof.
+import { mountTurnstile } from '../utils/turnstile.js'; // eslint-disable-line no-unused-vars
 import { computeChargeBreakdown } from '../utils/fees.js';
 
 export async function Cart(container) {
@@ -27,7 +31,7 @@ export async function Cart(container) {
   const html = `
     <section class="section bg-bg-alt pb-4">
       <div class="container">
-        <h1 class="mb-3">Secure Checkout</h1>
+        <h1 class="mb-3">Checkout</h1>
       </div>
     </section>
 
@@ -99,36 +103,19 @@ export async function Cart(container) {
             <div class="card p-3 shadow-md position-sticky" style="top: 100px;">
               <h3 class="border-b pb-2 mb-2 font-body">Payment</h3>
 
-              <div class="flex justify-between items-center mb-1 text-small">
+              <div class="flex justify-between items-center mb-1 text-small pb-2 border-b">
                 <span class="text-muted">Subtotal</span>
                 <span class="font-bold">${formatGHS(subtotal)}</span>
               </div>
-              <div class="flex justify-between items-center mb-1 text-small">
-                <span class="text-muted">Charges</span>
-                <span class="font-bold" id="charge-fee">${formatGHS(charge.fee)}</span>
-              </div>
-              <div class="flex justify-between items-center mb-2 pb-2 border-b text-small">
-                <span class="text-muted">Delivery</span>
-                <span class="text-muted">Calculated post-purchase</span>
-              </div>
 
-              <div class="flex justify-between items-center mb-4">
+              <div class="flex justify-between items-center mb-4 mt-2">
                 <span class="font-bold text-dark">Total to Pay</span>
-                <span class="font-bold text-gold" id="charge-total" style="font-size: 1.5rem;">${formatGHS(charge.total)}</span>
-              </div>
-
-              <div class="payment-methods mb-3 p-2 bg-bg-alt rounded text-center">
-                <p class="text-small text-muted mb-1">Pay securely with Mobile Money or Card</p>
-                <div class="flex justify-center gap-1 opacity-50">
-                  <span class="text-small font-bold">MTN</span> •
-                  <span class="text-small font-bold">Telecel</span> •
-                  <span class="text-small font-bold">AT</span> •
-                  <span class="text-small font-bold">Visa</span>
-                </div>
+                <span class="font-bold text-gold" id="charge-total" style="font-size: 1.5rem;">${formatGHS(subtotal)}</span>
               </div>
 
               <button id="pay-btn" class="btn btn-gold w-full flex justify-center items-center gap-1 shadow-gold">
-                <i data-lucide="lock" class="icon-sm"></i> Pay Now
+                <span>Continue to Payment</span>
+                <i data-lucide="arrow-right" class="icon-sm"></i>
               </button>
             </div>
           </div>
@@ -152,6 +139,46 @@ export async function Cart(container) {
     phone: Validators.phoneGhana
   });
 
+  // Turnstile is currently a no-op on this page because the manual MoMo flow
+  // does its CAPTCHA on /checkout-manual. The mount is kept (commented) so it
+  // can be re-enabled instantly when Paystack is switched back on.
+  //
+  // const captcha = await mountTurnstile(document.getElementById('checkout-captcha'), { theme: 'light' });
+  document.getElementById('checkout-captcha').style.display = 'none';
+
+  payBtn.addEventListener('click', () => {
+    if (!validation.validateAll()) {
+      showToast('Please fix the highlighted fields.', 'error');
+      return;
+    }
+
+    const values = validation.getValues();
+    const customer = {
+      first_name: sanitizeInputString(values.first_name, 120),
+      middle_name: sanitizeInputString(values.middle_name, 120),
+      last_name: sanitizeInputString(values.last_name, 120),
+      email: sanitizeInputString(values.email, 254),
+      phone: sanitizeInputString(values.phone, 32)
+    };
+
+    // Persist customer details in sessionStorage so /checkout-manual can read
+    // them without leaking PII into the URL.
+    try {
+      sessionStorage.setItem('checkoutCustomer', JSON.stringify(customer));
+    } catch (e) {
+      showToast('Your browser blocked session storage. Please enable it and try again.', 'error');
+      return;
+    }
+
+    window.appNavigate('/checkout-manual');
+  });
+
+  // ---------------------------------------------------------------------------
+  // Original Paystack flow — preserved here so it can be re-enabled by replacing
+  // the click handler above. Do NOT delete; the API endpoints, Paystack script,
+  // and customer validation upstream still work as before.
+  // ---------------------------------------------------------------------------
+  /*
   const captcha = await mountTurnstile(document.getElementById('checkout-captcha'), { theme: 'light' });
 
   function setPayButtonLoading(btn, loading, text = 'Pay Now') {
@@ -225,11 +252,7 @@ export async function Cart(container) {
 
       if (!initRes.ok) {
         const message = (initData && initData.error) || 'Failed to initialize payment';
-        if (initRes.status === 429) {
-          showToast(message, 'error');
-        } else {
-          showToast(message, 'error');
-        }
+        showToast(message, 'error');
         if (captcha) captcha.reset();
         setPayButtonLoading(payBtn, false);
         return;
@@ -270,4 +293,5 @@ export async function Cart(container) {
       setPayButtonLoading(payBtn, false);
     }
   });
+  */
 }

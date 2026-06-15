@@ -52,6 +52,10 @@ CREATE TABLE IF NOT EXISTS purchases (
     channel TEXT,
     items_json TEXT NOT NULL,
     paystack_response TEXT,
+    -- 'paystack' (online) or 'manual_momo' (MoMo + screenshot upload)
+    payment_method TEXT,
+    -- R2-backed URL of the manual-payment screenshot, served at /images/uploads/payments/*
+    payment_proof_url TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );

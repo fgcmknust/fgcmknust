@@ -80,6 +80,36 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Disable text selection / copy across the whole site (including overlays,
+     toasts, modals, drawers). Form inputs are re-enabled below so users
+     can still type, paste, and edit their own entries. */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none; /* suppress iOS long-press menu */
+}
+
+/* Re-enable selection inside anything the user is meant to author in.
+   Without this they couldn't edit registration / store / admin forms. */
+input,
+textarea,
+select,
+[contenteditable="true"],
+[contenteditable=""] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* Block image drag-save too, for visual consistency with the no-copy policy. */
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
 }
 
 /* ---------- Typography ---------- */

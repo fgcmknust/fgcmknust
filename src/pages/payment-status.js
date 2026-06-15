@@ -3,6 +3,42 @@ import { escapeHtml } from '../utils/helpers.js';
 
 export async function PaymentStatus(container, { query }) {
   const reference = query.reference;
+  const isManual = query.manual === '1';
+
+  // Manual MoMo flow: payment is submitted with a screenshot we review later,
+  // so there's nothing live to verify. Show an "awaiting review" success page.
+  if (isManual) {
+    container.innerHTML = `
+      <section class="section text-center" style="min-height: 70vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div class="p-4 bg-white rounded shadow-lg max-w-md w-full" data-reveal="true" data-reveal-direction="up">
+          <div class="mb-3 flex justify-center">
+            <div class="flex items-center justify-center rounded-full" style="width: 80px; height: 80px; background-color: #E8F5E9;">
+              <i data-lucide="check-circle" style="width: 40px; height: 40px; color: var(--color-success);"></i>
+            </div>
+          </div>
+          <h2 class="mb-1 text-dark">Payment Submitted</h2>
+          <p class="text-muted mb-3 text-small">Thanks! We've received your screenshot and will confirm your order once the MoMo transfer is verified. You'll get an email when your T-shirt is ready for pickup.</p>
+
+          <div class="text-left bg-bg-alt p-3 rounded mb-4 text-small">
+            ${reference ? `
+              <div class="flex justify-between mb-1 pb-1 border-b">
+                <span class="text-muted">Reference:</span>
+                <span class="font-bold">${escapeHtml(reference)}</span>
+              </div>
+            ` : ''}
+            <div class="flex justify-between">
+              <span class="text-muted">Status:</span>
+              <span class="font-bold text-gold uppercase">Awaiting Review</span>
+            </div>
+          </div>
+
+          <a href="/store" class="btn btn-gold w-full">Continue Shopping</a>
+        </div>
+      </section>
+    `;
+    if (window.lucide) lucide.createIcons({ root: container });
+    return;
+  }
 
   if (!reference) {
     container.innerHTML = `

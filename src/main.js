@@ -3,26 +3,19 @@ import { Router } from './utils/router.js';
 import { Animations } from './utils/animations.js';
 import { installNavStateDelegate } from './utils/nav-state.js';
 
-// Components
+// Components — needed for every page, kept in the main bundle.
 import { renderNavbar } from './components/navbar.js';
 import { renderFooter } from './components/footer.js';
 import { renderCartDrawer } from './components/cart-drawer.js';
 
-// Pages
-import { Home } from './pages/home.js';
-import { Events } from './pages/events.js';
-import { Store } from './pages/store.js';
-import { Product } from './pages/product.js';
-import { Register } from './pages/register.js';
-import { EventRegistration } from './pages/event-registration.js';
-import { Cart } from './pages/cart.js';
-import { PaymentStatus } from './pages/payment-status.js';
-
-// Admin Pages
-import { AdminLogin } from './pages/admin/login.js';
-import { AdminDashboard } from './pages/admin/dashboard.js';
-import { EventsManager } from './pages/admin/events-manager.js';
-import { ProductsManager } from './pages/admin/products-manager.js';
+// Pages are loaded lazily so the initial bundle only contains the shell.
+// Cloudflare Web Analytics flagged P75 Processing = 2.4s on mobile because
+// every visitor downloaded code for all 12 pages (admin, register, store,
+// product, etc.) before the first paint. With per-route dynamic imports
+// each page becomes its own chunk and the Service Worker caches it after
+// first navigation.
+const lazy = (loader, exportName) =>
+  (container, ctx) => loader().then((m) => m[exportName](container, ctx));
 
 // Setup App Shell
 function initAppShell() {
@@ -48,20 +41,21 @@ function updateFooterLock() {
   footer.classList.remove('footer-locked');
 }
 
-// Define Routes
+// Define Routes — each entry resolves its page module on demand.
 const routes = {
-  '/': Home,
-  '/events': Events,
-  '/store': Store,
-  '/product': Product,
-  '/register': Register,
-  '/event-registration': EventRegistration,
-  '/cart': Cart,
-  '/payment-status': PaymentStatus,
-  '/admin/login': AdminLogin,
-  '/admin': AdminDashboard,
-  '/admin/events': EventsManager,
-  '/admin/products': ProductsManager,
+  '/': lazy(() => import('./pages/home.js'), 'Home'),
+  '/events': lazy(() => import('./pages/events.js'), 'Events'),
+  '/store': lazy(() => import('./pages/store.js'), 'Store'),
+  '/product': lazy(() => import('./pages/product.js'), 'Product'),
+  '/register': lazy(() => import('./pages/register.js'), 'Register'),
+  '/event-registration': lazy(() => import('./pages/event-registration.js'), 'EventRegistration'),
+  '/cart': lazy(() => import('./pages/cart.js'), 'Cart'),
+  '/checkout-manual': lazy(() => import('./pages/checkout-manual.js'), 'CheckoutManual'),
+  '/payment-status': lazy(() => import('./pages/payment-status.js'), 'PaymentStatus'),
+  '/admin/login': lazy(() => import('./pages/admin/login.js'), 'AdminLogin'),
+  '/admin': lazy(() => import('./pages/admin/dashboard.js'), 'AdminDashboard'),
+  '/admin/events': lazy(() => import('./pages/admin/events-manager.js'), 'EventsManager'),
+  '/admin/products': lazy(() => import('./pages/admin/products-manager.js'), 'ProductsManager'),
   '*': async (container) => {
     container.innerHTML = `
       <section class="section text-center flex flex-col justify-center items-center" style="min-height: 60vh;">
@@ -85,6 +79,37 @@ if ('serviceWorker' in navigator) {
     }, 0);
   });
 }
+
+// ---------- Content protection ----------
+// CSS already disables text selection everywhere except form fields. Add
+// listener-level guards so Ctrl/Cmd-C, right-click "Save image", and drag
+// don't bypass the policy on browsers that allow programmatic selection.
+// Form inputs are exempted so users can still type, paste, and submit.
+function isEditableTarget(target) {
+  if (!target) return false;
+  const tag = target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  if (target.isContentEditable) return true;
+  if (target.closest && target.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""]')) return true;
+  return false;
+}
+
+document.addEventListener('copy', (e) => {
+  if (isEditableTarget(e.target)) return;
+  e.preventDefault();
+});
+document.addEventListener('cut', (e) => {
+  if (isEditableTarget(e.target)) return;
+  e.preventDefault();
+});
+document.addEventListener('contextmenu', (e) => {
+  if (isEditableTarget(e.target)) return;
+  e.preventDefault();
+});
+document.addEventListener('dragstart', (e) => {
+  if (isEditableTarget(e.target)) return;
+  e.preventDefault();
+});
 
 // Start Application
 document.addEventListener('DOMContentLoaded', () => {

@@ -22,7 +22,7 @@ export async function onRequestGet(context) {
       return new Response(JSON.stringify({ error: 'Invalid email' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
     result = await DB.prepare(`
-      SELECT reference, amount, currency, status, items_json, created_at
+      SELECT reference, amount, currency, status, items_json, payment_method, payment_proof_url, created_at
       FROM purchases
       WHERE customer_email = ?
       ORDER BY created_at DESC
@@ -30,7 +30,7 @@ export async function onRequestGet(context) {
     `).bind(email).all();
   } else {
     result = await DB.prepare(`
-      SELECT reference, customer_first_name, customer_middle_name, customer_last_name, customer_email, amount, status, created_at
+      SELECT reference, customer_first_name, customer_middle_name, customer_last_name, customer_email, amount, status, payment_method, payment_proof_url, created_at
       FROM purchases
       ORDER BY created_at DESC
       LIMIT 50

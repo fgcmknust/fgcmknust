@@ -157,7 +157,9 @@ export async function EventRegistration(container) {
     phone: Validators.phoneGhana
   });
 
-  const captcha = await mountTurnstile(document.getElementById('event-captcha'), { theme: 'dark' });
+  // Mount Turnstile in the background — see the same note in register.js.
+  // Awaiting here would block initial render on the Turnstile script download.
+  const captchaPromise = mountTurnstile(document.getElementById('event-captcha'), { theme: 'dark' });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -166,6 +168,7 @@ export async function EventRegistration(container) {
       return;
     }
 
+    const captcha = await captchaPromise;
     const captchaToken = captcha ? await captcha.getToken() : null;
     if (captcha && captcha.enabled && !captchaToken) {
       showToast('Please complete the CAPTCHA.', 'error');
@@ -215,7 +218,7 @@ export async function EventRegistration(container) {
         } else {
           showToast(result.error || 'Registration failed. Please try again.', 'error');
         }
-        if (captcha) captcha.reset();
+        if (captcha && captcha.reset) captcha.reset();
       }
     } catch (err) {
       console.error(err);
