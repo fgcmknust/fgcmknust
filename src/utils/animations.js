@@ -7,13 +7,32 @@ if (typeof window !== 'undefined' && window.gsap && window.ScrollTrigger) {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+// Mobile / touch viewports get NO ScrollTrigger-driven reveals. The remaining
+// trigger source of the scroll-up blink was iOS Safari's address-bar resize:
+// when the bar slides back in, the viewport height shrinks, which fires a
+// ScrollTrigger.refresh(). Each trigger re-computes its start position, and
+// because GSAP's fromTo() owns the element's `opacity`/`transform` style, a
+// re-evaluated trigger can flash the element through its "from" state for a
+// frame. Even with `once: true` and `toggleActions: "play none none none"`,
+// refresh() can re-init the timeline. The cheapest fix that's bulletproof
+// across iOS Safari versions: don't attach ScrollTrigger on small viewports at
+// all. The data-reveal markup stays — elements just appear at their final
+// state immediately, which is fine for stacked mobile layouts.
+function disableScrollRevealsOnMobile() {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia
+    ? window.matchMedia('(max-width: 768px), (pointer: coarse)').matches
+    : window.innerWidth < 769;
+}
+
 export const Animations = {
   /**
    * Initializes scroll reveals for elements with data-reveal attribute
    */
   initScrollReveals(container = document) {
     if (!window.gsap) return;
-    
+    if (disableScrollRevealsOnMobile()) return;
+
     const elements = container.querySelectorAll('[data-reveal]');
     
     elements.forEach(el => {
@@ -62,6 +81,10 @@ export const Animations = {
    */
   staggerCards(cards, triggerElement) {
     if (!window.gsap || !cards.length) return;
+    // Same mobile-blink reason as initScrollReveals — skip ScrollTrigger on
+    // touch / small viewports so an iOS address-bar refresh can't snap cards
+    // back through their opacity-0 state.
+    if (disableScrollRevealsOnMobile()) return;
 
     gsap.fromTo(cards,
       { y: 50, opacity: 0 },

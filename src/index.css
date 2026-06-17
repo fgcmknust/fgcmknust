@@ -892,9 +892,15 @@ body.no-scroll {
   width: 100%;
   z-index: 50;
   padding: 1rem 0;
-  transition: all var(--transition-normal);
-  /* needed for absolute dropdown positioning */
-  position: fixed;
+  /* Animate ONLY the visual properties that actually change between
+     .transparent and .solid. `transition: all` previously caused iOS Safari
+     to flicker the navbar (and trigger neighbouring repaints) when the
+     address bar slid in/out during scroll. */
+  transition:
+    background var(--transition-normal),
+    backdrop-filter var(--transition-normal),
+    -webkit-backdrop-filter var(--transition-normal),
+    box-shadow var(--transition-normal);
 }
 
 .navbar.transparent {
@@ -2094,6 +2100,27 @@ body.no-scroll {
     background-size: cover !important;
     background-position: center center !important;
     background-repeat: no-repeat !important;
+  }
+
+  /* --- iOS scroll-up blink defenses ---
+     1. Force data-reveal elements visible. Even though Animations.js skips
+        ScrollTrigger on mobile, this is the safety net that guarantees
+        nothing ever sits at opacity 0 if a regression sneaks back in.
+     2. Promote major sections to their own GPU compositor layer so iOS Safari
+        does not repaint their pixels when the address bar slides in (which
+        was the visible blink when scrolling up from the footer). */
+  .welcome-section [data-reveal],
+  .section [data-reveal],
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .welcome-section,
+  .section {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   /* --- Home page Welcome section: keep only h2 + paragraph; hide quote, image, badge --- */
