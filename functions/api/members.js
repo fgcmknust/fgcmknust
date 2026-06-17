@@ -2,6 +2,7 @@
 // Admin-only: list registered members
 
 import { checkAdminAuth } from './_auth.js';
+import { readReplica } from './_session.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -9,7 +10,8 @@ export async function onRequestGet(context) {
   const auth = checkAdminAuth(request, env);
   if (!auth.ok) return auth.response;
 
-  const DB = env.DB;
+  // Read-only listing; nearest-replica read is fine for the admin dashboard.
+  const DB = readReplica(env);
 
   const result = await DB.prepare(`
     SELECT id, first_name, middle_name, last_name, email, phone, department, created_at

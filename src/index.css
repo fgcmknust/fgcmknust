@@ -1257,27 +1257,55 @@ body.no-scroll {
    FOOTER
    ========================================================= */
 .footer {
-  padding: 1rem 0;
+  padding: 0.75rem 0;
 }
 
+/* Compact footer:
+     - Desktop: two columns side by side — brand on the LEFT, Contact on the
+       RIGHT. Both columns are text-centered inside themselves.
+     - The copyright bar carries the "Follow Us" label + social icons on the
+       left and the © text on the right (one shared horizontal line).
+     - Mobile (<700 px): both column rows stack vertically. */
+.footer-narrow {
+  max-width: 760px;
+}
+.footer-stack {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1.5rem 2rem;
+  justify-content: center;
+  align-items: flex-start;
+}
+.footer-stack > .footer-col {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.footer-centered {
+  text-align: center;
+}
+.footer-centered .footer-subtitle {
+  text-align: center;
+}
+
+@media (max-width: 699px) {
+  .footer-stack {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  .footer-stack > .footer-col {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+}
+
+/* Legacy .footer-grid kept (unused after redesign) so any cached CSS still
+   no-ops if it sneaks in. */
 .footer-grid {
   display: grid;
   gap: 1rem;
   grid-template-columns: 1fr;
-}
-
-@media (min-width: 768px) {
-  .footer-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .footer-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-  }
 }
 
 .footer-subtitle {
@@ -1406,6 +1434,382 @@ body.no-scroll {
   background: rgba(0, 0, 0, 0.55);
   z-index: 0;
   pointer-events: none;
+}
+
+/* =========================================================
+   ADMIN PORTAL — Premium dark + gold
+   ========================================================= */
+.admin-shell {
+  --admin-bg: #F7F4EC;
+  --admin-surface: #FFFFFF;
+  --admin-ink: #0F0F12;
+  --admin-ink-2: #1C1C22;
+  --admin-ink-3: #2A2A33;
+  --admin-text: #1A1A1A;
+  --admin-text-muted: #6B6B6B;
+  --admin-line: rgba(0, 0, 0, 0.08);
+  --admin-gold: #C5973E;
+  --admin-gold-soft: rgba(197, 151, 62, 0.12);
+  --admin-radius: 14px;
+  --admin-radius-sm: 8px;
+
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  font-family: var(--font-body);
+}
+
+/* ---- Sidebar ---- */
+.admin-sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem 1rem;
+  background:
+    radial-gradient(circle at top left, rgba(197, 151, 62, 0.12), transparent 55%),
+    linear-gradient(180deg, var(--admin-ink) 0%, var(--admin-ink-2) 100%);
+  color: #E9E4D7;
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.06);
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 1.25rem;
+}
+.admin-brand-logo {
+  border-radius: 50%;
+  background: var(--admin-gold-soft);
+  padding: 4px;
+  flex-shrink: 0;
+}
+.admin-brand-text { line-height: 1.1; }
+.admin-brand-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--admin-gold);
+  letter-spacing: 0.04em;
+}
+.admin-brand-sub {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-top: 2px;
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  font-size: 0.92rem;
+  text-decoration: none;
+  border-radius: var(--admin-radius-sm);
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+.admin-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  transform: translateX(2px);
+}
+.admin-nav-item.is-active {
+  background: linear-gradient(90deg, var(--admin-gold) 0%, #A87A26 100%);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(197, 151, 62, 0.35);
+}
+.admin-nav-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.admin-logout {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--admin-radius-sm);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+.admin-logout:hover {
+  background: rgba(220, 53, 69, 0.15);
+  border-color: rgba(220, 53, 69, 0.4);
+  color: #ff9aa3;
+}
+
+/* ---- Main column ---- */
+.admin-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 2rem;
+  background: var(--admin-surface);
+  border-bottom: 1px solid var(--admin-line);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.admin-sidebar-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--admin-line);
+  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--admin-text);
+}
+.admin-topbar-titles { flex: 1; min-width: 0; }
+.admin-topbar-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--admin-ink);
+  margin: 0;
+  line-height: 1.1;
+}
+.admin-topbar-sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--admin-text-muted);
+}
+.admin-topbar-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.admin-content {
+  padding: 2rem;
+  flex: 1;
+}
+
+/* ---- Cards ---- */
+.admin-card {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-line);
+  border-radius: var(--admin-radius);
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(15, 15, 18, 0.04);
+}
+.admin-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--admin-line);
+}
+.admin-card-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--admin-ink);
+}
+
+/* ---- Stat grid ---- */
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+.admin-stat {
+  position: relative;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-line);
+  border-radius: var(--admin-radius);
+  padding: 1.5rem;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.admin-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(15, 15, 18, 0.08);
+}
+.admin-stat::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--admin-gold), #E8C872);
+  opacity: 0.8;
+}
+.admin-stat-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-text-muted);
+  margin-bottom: 0.5rem;
+}
+.admin-stat-value {
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--admin-ink);
+  line-height: 1;
+  margin: 0;
+}
+.admin-stat-trend {
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--admin-text-muted);
+}
+.admin-stat-icon {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--admin-gold-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-gold);
+}
+.admin-stat-icon i { width: 20px; height: 20px; }
+
+.admin-stat.is-alert::before { background: linear-gradient(90deg, #d32f2f, #ef5350); }
+.admin-stat.is-alert .admin-stat-icon { background: rgba(211, 47, 47, 0.12); color: #d32f2f; }
+
+/* ---- Premium table ---- */
+.admin-table-wrap { overflow-x: auto; border-radius: var(--admin-radius-sm); }
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.admin-table th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-text-muted);
+  padding: 0.75rem 1rem;
+  background: var(--admin-bg);
+  border-bottom: 1px solid var(--admin-line);
+}
+.admin-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--admin-line);
+  vertical-align: middle;
+}
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: rgba(197, 151, 62, 0.04); }
+
+.admin-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.admin-badge.is-success { background: rgba(45, 138, 78, 0.12); color: #2D8A4E; }
+.admin-badge.is-pending { background: var(--admin-gold-soft); color: var(--admin-gold); }
+.admin-badge.is-failed  { background: rgba(211, 47, 47, 0.12); color: #d32f2f; }
+
+.admin-proof-thumb {
+  display: inline-block;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--admin-line);
+  background: var(--admin-bg);
+}
+
+/* ---- Buttons (within admin shell) ---- */
+.admin-shell .btn-gold {
+  background: linear-gradient(135deg, var(--admin-gold) 0%, #B0832E 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.admin-shell .btn-gold:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 8px 20px rgba(197, 151, 62, 0.35);
+}
+
+/* ---- Empty / loading rows ---- */
+.admin-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--admin-text-muted);
+}
+.admin-empty i {
+  width: 36px; height: 36px;
+  color: var(--admin-text-muted);
+  opacity: 0.5;
+  margin-bottom: 0.75rem;
+}
+
+/* ---- Mobile collapse ---- */
+.admin-sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 40;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.admin-sidebar-backdrop.is-open {
+  display: block;
+  opacity: 1;
+}
+
+@media (max-width: 900px) {
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+  .admin-sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 260px;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  .admin-sidebar.is-open { transform: translateX(0); }
+  .admin-sidebar-toggle { display: flex; }
+  .admin-content { padding: 1.25rem; }
+  .admin-topbar { padding: 1rem 1.25rem; }
 }
 
 /* =========================================================
@@ -1698,10 +2102,27 @@ body.no-scroll {
     display: none !important;
   }
 
+  /* Mobile-only president attribution (shown in place of the hidden picture). */
+  .welcome-section .welcome-attribution {
+    display: flex !important;
+  }
+
   /* Single-column layout for the surviving welcome content */
   .welcome-section .grid.grid-2 {
     grid-template-columns: 1fr !important;
   }
+}
+
+/* Desktop: the attribution is hidden because the floating glass card on the
+   photo already identifies the president. Live OUTSIDE the mobile breakpoint
+   so it applies at all viewports >=768px without an extra media query. */
+.welcome-section .welcome-attribution {
+  display: none;
+}
+
+/* Re-open the mobile media query so following rules stay scoped to it. The
+   outer file relies on this being inside @media (max-width: 768px). */
+@media (max-width: 768px) {
 
   /* --- Mobile footer: compact size --- */
   .footer.dark-section,

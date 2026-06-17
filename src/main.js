@@ -1,7 +1,11 @@
 import './index.css';
+// Installs window.lucide with a tree-shaken icon set (replaces the full CDN
+// library). Imported first so the global is ready before any page renders.
+import './utils/icons.js';
 import { Router } from './utils/router.js';
 import { Animations } from './utils/animations.js';
 import { installNavStateDelegate } from './utils/nav-state.js';
+import { ADMIN_ROUTES } from './config/admin-path.js';
 
 // Components — needed for every page, kept in the main bundle.
 import { renderNavbar } from './components/navbar.js';
@@ -52,10 +56,13 @@ const routes = {
   '/cart': lazy(() => import('./pages/cart.js'), 'Cart'),
   '/checkout-manual': lazy(() => import('./pages/checkout-manual.js'), 'CheckoutManual'),
   '/payment-status': lazy(() => import('./pages/payment-status.js'), 'PaymentStatus'),
-  '/admin/login': lazy(() => import('./pages/admin/login.js'), 'AdminLogin'),
-  '/admin': lazy(() => import('./pages/admin/dashboard.js'), 'AdminDashboard'),
-  '/admin/events': lazy(() => import('./pages/admin/events-manager.js'), 'EventsManager'),
-  '/admin/products': lazy(() => import('./pages/admin/products-manager.js'), 'ProductsManager'),
+  // Admin routes live under a private slug (see src/config/admin-path.js).
+  // Visitors hitting /admin, /admin/login, /wp-admin, /administrator, etc. just
+  // see the public 404 — the portal isn't discoverable from path-scanning.
+  [ADMIN_ROUTES.login]:     lazy(() => import('./pages/admin/login.js'),            'AdminLogin'),
+  [ADMIN_ROUTES.dashboard]: lazy(() => import('./pages/admin/dashboard.js'),        'AdminDashboard'),
+  [ADMIN_ROUTES.events]:    lazy(() => import('./pages/admin/events-manager.js'),   'EventsManager'),
+  [ADMIN_ROUTES.products]:  lazy(() => import('./pages/admin/products-manager.js'), 'ProductsManager'),
   '*': async (container) => {
     container.innerHTML = `
       <section class="section text-center flex flex-col justify-center items-center" style="min-height: 60vh;">

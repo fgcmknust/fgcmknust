@@ -16,12 +16,44 @@ export async function Home(container) {
     category: "Mercy"
   };
 
+  // Daily-scripture cache key: today's date in the user's *local* timezone.
+  // The server uses this same string to pick a deterministic row, so:
+  //   - Refreshes inside the same calendar day return the same scripture
+  //   - The reading rotates automatically at the user's local midnight
+  //   - localStorage avoids a network round-trip for repeat visits today
+  const now = new Date();
+  const localDate = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0')
+  ].join('-');
+  const DEVOTIONAL_CACHE_KEY = 'devotional_of_day';
+  let cachedDevotional = null;
   try {
-    const [eventsRes, specialRes, devRes] = await Promise.all([
+    const raw = localStorage.getItem(DEVOTIONAL_CACHE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.date === localDate && parsed.payload && parsed.payload.text) {
+        cachedDevotional = parsed.payload;
+      }
+    }
+  } catch (e) { /* localStorage blocked — fall through to network */ }
+
+  if (cachedDevotional) {
+    devotional = cachedDevotional;
+  }
+
+  try {
+    const requests = [
       fetch('/api/events'),
-      fetch('/api/events?special=1'),
-      fetch('/api/devotional')
-    ]);
+      fetch('/api/events?special=1')
+    ];
+    // Skip the devotional fetch entirely when we already have today's cached.
+    if (!cachedDevotional) {
+      requests.push(fetch(`/api/devotional?date=${encodeURIComponent(localDate)}`));
+    }
+    const [eventsRes, specialRes, devRes] = await Promise.all(requests);
+
     if (eventsRes.ok) {
       allEvents = await eventsRes.json();
       allEvents.forEach(ev => ev.image = getDummyEventImage(ev.id));
@@ -30,10 +62,16 @@ export async function Home(container) {
       specialEvents = await specialRes.json();
       specialEvents.forEach(ev => ev.image = getDummyEventImage(ev.id));
     }
-    if (devRes.ok) {
+    if (devRes && devRes.ok) {
       const dbDevotional = await devRes.json();
       if (dbDevotional && dbDevotional.text) {
         devotional = dbDevotional;
+        try {
+          localStorage.setItem(
+            DEVOTIONAL_CACHE_KEY,
+            JSON.stringify({ date: localDate, payload: dbDevotional })
+          );
+        } catch (e) { /* ignore */ }
       }
     }
   } catch (e) {
@@ -53,8 +91,8 @@ export async function Home(container) {
     heroHTML = renderHero({
       title: '',
       subtitle: '',
-      bgImage: '/images/Laptop.jpg',
-      mobileBgImage: '/images/phone.jpg',
+      bgImage: '/images/Laptop.webp',
+      mobileBgImage: '/images/phone.webp',
       height: 'auto; aspect-ratio: 16 / 9',
       mobileHeight: 'var(--mobile-vh, 100vh)',
       mobileBgSize: 'cover',
@@ -64,7 +102,7 @@ export async function Home(container) {
         <div class="position-absolute" style="bottom: 10%; right: 5%; z-index: 10;">
           <div class="flex gap-1">
             <a href="/events"${defaultEventId ? ` data-event-id="${escapeHtml(defaultEventId)}"` : ''} class="btn bg-white text-dark shadow-md" style="border-radius: 0;">Learn More</a>
-            <a href="/event-registration"${defaultEventId ? ` data-event-id="${escapeHtml(defaultEventId)}"` : ''} class="btn btn-gold shadow-md hover-lift hero-register-btn" data-event-image="/images/Laptop.jpg" style="border-radius: 0;">Register</a>
+            <a href="/event-registration"${defaultEventId ? ` data-event-id="${escapeHtml(defaultEventId)}"` : ''} class="btn btn-gold shadow-md hover-lift hero-register-btn" data-event-image="/images/Laptop.webp" style="border-radius: 0;">Register</a>
           </div>
         </div>
       `
@@ -83,16 +121,39 @@ export async function Home(container) {
         <div data-reveal="true" data-reveal-direction="right">
           <h2 class="mb-1 text-gold-dark">Welcome Home</h2>
           <div style="width: 50px; height: 3px; background: var(--color-gold); margin-bottom: 1.5rem;"></div>
-          <p class="text-muted" style="font-size: 1.1rem; line-height: 1.8;">${churchInfo.about}</p>
-          <blockquote class="welcome-quote p-3 bg-white rounded shadow-sm border-l" style="border-left: 4px solid var(--color-gold);">
-            <p class="mb-0 text-small italic">"${churchInfo.pastorWelcome}"</p>
-          </blockquote>
+          ${(() => {
+            // The final paragraph ("Welcome home. You belong here.") is rendered
+            // as an uppercase, bold flourish; everything before it stays as the
+            // muted body copy.
+            const paragraphs = churchInfo.about.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+            const closer = paragraphs.pop();
+            const body = paragraphs
+              .map(p => `<p class="text-muted" style="font-size: 1.1rem; line-height: 1.8;">${escapeHtml(p)}</p>`)
+              .join('');
+            const closerHTML = closer
+              ? `<p class="mt-2 mb-0 font-bold text-gold-dark" style="font-size: 1.15rem; line-height: 1.6; letter-spacing: 0.06em; text-transform: uppercase;">${escapeHtml(closer)}</p>`
+              : '';
+            return body + closerHTML;
+          })()}
+
+          <!-- President attribution: hidden on desktop (the photo's glass card
+               already credits her) and revealed on mobile by .welcome-attribution
+               in index.css. Flex layout creates the gold-line flanked signature. -->
+          <div class="welcome-attribution mt-3" style="align-items: center; gap: 0.6rem;">
+            <span style="flex: 1; height: 1px; background: var(--color-gold-light); opacity: 0.6;"></span>
+            <p class="mb-0 text-small font-bold text-gold-dark" style="white-space: nowrap; letter-spacing: 0.04em;">
+              From the President — Min. Ethel Namatey
+            </p>
+            <span style="flex: 1; height: 1px; background: var(--color-gold-light); opacity: 0.6;"></span>
+          </div>
         </div>
         <div data-reveal="true" data-reveal-direction="left" class="position-relative welcome-media">
-           <img src="/images/event-sunday.jpg" alt="Church Service" class="rounded shadow-lg w-full" loading="lazy" decoding="async" style="height: 400px; object-fit: cover;">
-           <div class="position-absolute glass p-2 rounded shadow-md" style="bottom: -2rem; right: 2rem; max-width: 200px;">
-              <p class="font-bold text-small mb-0">Join us this Sunday</p>
-              <p class="text-muted text-small mb-0 mt-0.5">9:00 AM @ ${churchInfo.address}</p>
+           <div class="rounded shadow-lg" style="height: 400px; overflow: hidden;">
+             <img src="/images/Ethel.jpeg" alt="Min. Ethel Namatey — President, FGCM-KNUST" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover; object-position: center 20%; transform: scale(1.12); transform-origin: center 30%;">
+           </div>
+           <div class="position-absolute p-2 rounded" style="bottom: -2rem; right: 2rem; max-width: 220px; background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.25); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);">
+              <p class="font-bold text-small mb-0" style="color: #000; text-shadow: 0 1px 3px rgba(255,255,255,0.55);">President - FGCM-KNUST</p>
+              <p class="text-small mb-0 mt-0.5" style="color: rgba(0,0,0,0.78); text-shadow: 0 1px 2px rgba(255,255,255,0.45);">Min. Ethel Namatey</p>
            </div>
         </div>
       </div>

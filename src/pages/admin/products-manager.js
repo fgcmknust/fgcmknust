@@ -1,6 +1,8 @@
 import { showToast } from '../../components/toast.js';
 import { formatGHS, escapeHtml } from '../../utils/helpers.js';
 import { sanitizeInputString } from '../../utils/validation.js';
+import { renderAdminShell, attachAdminShellBehavior } from './_layout.js';
+import { ADMIN_ROUTES } from '../../config/admin-path.js';
 
 function validateProductPayload(p) {
   if (!p.name || p.name.length < 1 || p.name.length > 200) return 'Name must be 1–200 characters';
@@ -17,35 +19,15 @@ function validateProductPayload(p) {
 export async function ProductsManager(container) {
   const token = sessionStorage.getItem('adminToken');
   if (!token) {
-    window.appNavigate('/admin/login');
+    window.appNavigate(ADMIN_ROUTES.login);
     return;
   }
 
-  container.innerHTML = `
-    <div class="admin-layout" style="display: flex; min-height: 100vh; background: var(--color-bg-alt);">
-      <!-- Sidebar -->
-      <aside style="width: 250px; background: white; border-right: 1px solid rgba(0,0,0,0.1); padding: 2rem 1rem; display: flex; flex-direction: column;">
-        <div style="margin-bottom: 2rem; text-align: center;">
-          <img src="/images/FGCI LOGO.png" alt="Logo" style="height: 50px; margin-bottom: 1rem;">
-          <h3 class="font-heading font-bold" style="font-size: 1.2rem;">Admin Portal</h3>
-        </div>
-        <nav class="flex flex-col gap-1">
-          <a href="/admin" class="btn btn-outline w-full text-left">Dashboard</a>
-          <a href="/admin/events" class="btn btn-outline w-full text-left">Manage Events</a>
-          <a href="/admin/products" class="btn w-full text-left" style="background: var(--color-gold); color: white;">Manage Merch</a>
-        </nav>
-      </aside>
-      
-      <!-- Main Content -->
-      <main style="flex: 1; padding: 2rem; overflow-y: auto;">
-        <div class="flex justify-between items-center mb-4">
-          <h1 class="display text-gold" style="font-size: 2rem;">Merch Manager</h1>
-          <button id="btn-new-product" class="btn btn-gold">Create New Product</button>
-        </div>
-        
+  const headerExtra = `<button id="btn-new-product" class="btn btn-gold">+ New Product</button>`;
+  const innerContent = `
         <!-- Form Section -->
-        <div id="product-form-section" class="card p-4 mb-4" style="display: none;">
-          <h3 class="font-heading font-bold mb-3" id="form-title">Create Product</h3>
+        <div id="product-form-section" class="admin-card mb-4" style="display: none;">
+          <h3 class="admin-card-title mb-3" id="form-title">Create Product</h3>
           <form id="product-form" class="flex flex-col gap-3">
             <input type="hidden" id="product-id">
             <input type="hidden" id="product-existing-image">
@@ -105,28 +87,37 @@ export async function ProductsManager(container) {
         </div>
 
         <!-- List Section -->
-        <div class="card p-4">
-          <h3 class="font-heading font-bold mb-3">All Products</h3>
-          <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3 class="admin-card-title">All Products</h3>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
               <thead>
-                <tr style="border-bottom: 2px solid var(--color-bg-alt);">
-                  <th style="padding: 1rem;">Name</th>
-                  <th style="padding: 1rem;">Price</th>
-                  <th style="padding: 1rem;">Category</th>
-                  <th style="padding: 1rem;">Featured</th>
-                  <th style="padding: 1rem;">Actions</th>
+                <tr>
+                  <th>Name</th>
+                  <th>Price</th>
+                  <th>Category</th>
+                  <th>Featured</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="products-table-body">
-                <tr><td colspan="5" style="padding: 1rem; text-align: center;">Loading products...</td></tr>
+                <tr><td colspan="5" class="admin-empty">Loading products…</td></tr>
               </tbody>
             </table>
           </div>
         </div>
-      </main>
-    </div>
   `;
+
+  container.innerHTML = renderAdminShell({
+    title: 'Merch Manager',
+    subtitle: 'Add, edit, and feature products in the store.',
+    current: 'products',
+    content: innerContent,
+    headerExtra
+  });
+  attachAdminShellBehavior();
 
   // UI Elements
   const formSection = document.getElementById('product-form-section');
@@ -154,7 +145,7 @@ export async function ProductsManager(container) {
       
       tbody.innerHTML = '';
       if (!products || products.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="padding: 1rem; text-align: center;">No products found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="admin-empty">No products yet — create one above.</td></tr>';
         return;
       }
       
@@ -162,13 +153,13 @@ export async function ProductsManager(container) {
         const tr = document.createElement('tr');
         tr.style.borderBottom = '1px solid rgba(0,0,0,0.05)';
         tr.innerHTML = `
-          <td style="padding: 1rem;"><strong>${escapeHtml(p.name)}</strong></td>
-          <td style="padding: 1rem;">${formatGHS(p.price)}</td>
-          <td style="padding: 1rem;"><span class="badge" style="background: var(--color-bg-alt);">${escapeHtml(p.category)}</span></td>
-          <td style="padding: 1rem;">${p.isFeatured ? '✅' : '-'}</td>
-          <td style="padding: 1rem;">
+          <td><strong>${escapeHtml(p.name)}</strong></td>
+          <td>${formatGHS(p.price)}</td>
+          <td><span class="admin-badge is-pending">${escapeHtml(p.category)}</span></td>
+          <td>${p.isFeatured ? '<span class="admin-badge is-success">Yes</span>' : '<span class="text-muted">—</span>'}</td>
+          <td>
             <button class="btn btn-outline btn-sm btn-edit" data-id="${escapeHtml(p.id)}">Edit</button>
-            <button class="btn btn-outline btn-sm btn-delete" data-id="${escapeHtml(p.id)}" style="border-color: #dc3545; color: #dc3545; margin-left: 0.5rem;">Del</button>
+            <button class="btn btn-outline btn-sm btn-delete" data-id="${escapeHtml(p.id)}" style="border-color: #dc3545; color: #dc3545; margin-left: 0.4rem;">Delete</button>
           </td>
         `;
         tbody.appendChild(tr);

@@ -38,27 +38,32 @@ export async function onRequestPost(context) {
   if (!isValidEmail(email)) return Response.json({ error: 'Invalid email' }, { status: 400 });
   if (!isValidPhoneSimple(phone)) return Response.json({ error: 'Invalid phone number' }, { status: 400 });
 
-  // Verify the event actually exists before inserting.
-  const evRow = await DB.prepare('SELECT id FROM events WHERE id = ?').bind(sanitizeString(event_id, 128)).first();
-  if (!evRow) return Response.json({ error: 'Unknown event' }, { status: 400 });
-
   const id = generateUUIDv7();
+  const eventIdSan = sanitizeString(event_id, 128);
   try {
+    // Single round trip: insert only if the event exists, rather than a
+    // separate SELECT-then-INSERT. meta.changes === 0 means the WHERE EXISTS
+    // matched no event, which we surface as "Unknown event" below.
     const result = await DB.prepare(`
       INSERT INTO event_registrations (id, event_id, event_name, first_name, middle_name, last_name, email, phone)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      SELECT ?, ?, ?, ?, ?, ?, ?, ?
+      WHERE EXISTS (SELECT 1 FROM events WHERE id = ?)
     `).bind(
       id,
-      sanitizeString(event_id, 128),
+      eventIdSan,
       sanitizeString(event_name, 256) || null,
       sanitizeString(first_name, 120),
       sanitizeString(middle_name, 120) || null,
       sanitizeString(last_name, 120),
       sanitizeString(email, 254),
-      sanitizeString(phone, 32)
+      sanitizeString(phone, 32),
+      eventIdSan
     ).run();
 
     if (!result.success) throw new Error('Database insertion failed');
+    if (result.meta.changes === 0) {
+      return Response.json({ error: 'Unknown event' }, { status: 400 });
+    }
     return Response.json({ message: 'Event registration successful', status: 'success' }, { status: 201 });
   } catch (err) {
     if (err && err.message && err.message.includes('UNIQUE constraint')) {

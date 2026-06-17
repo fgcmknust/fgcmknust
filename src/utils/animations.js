@@ -26,17 +26,25 @@ export const Animations = {
       if (direction === 'left') x = 40;
       if (direction === 'right') x = -40;
 
-      gsap.fromTo(el, 
-        { 
-          y: y, 
-          x: x, 
-          opacity: 0 
+      gsap.fromTo(el,
+        {
+          y: y,
+          x: x,
+          opacity: 0
         },
         {
           scrollTrigger: {
             trigger: el,
-            start: "top 85%", // Trigger when top of element hits 85% of viewport
-            toggleActions: "play none none reverse" // Play on enter, reverse on leave back
+            start: "top 85%",
+            // Play once and STAY. The previous "play none none reverse" reversed
+            // the animation each time the element scrolled back above the
+            // viewport, then replayed on re-entry. On mobile this caused a
+            // visible blink when scrolling up from the footer (iOS Safari's
+            // address-bar resize made ScrollTrigger re-evaluate the boundary
+            // mid-scroll). Locking the state with "none" removes the blink and
+            // also avoids unnecessary GPU work.
+            toggleActions: "play none none none",
+            once: true
           },
           y: 0,
           x: 0,

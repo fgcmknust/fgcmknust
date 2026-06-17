@@ -1,6 +1,8 @@
 import { showToast } from '../../components/toast.js';
 import { formatDate, escapeHtml } from '../../utils/helpers.js';
 import { sanitizeInputString } from '../../utils/validation.js';
+import { renderAdminShell, attachAdminShellBehavior } from './_layout.js';
+import { ADMIN_ROUTES } from '../../config/admin-path.js';
 
 function validateEventPayload(p) {
   if (!p.title || p.title.length < 1 || p.title.length > 300) return 'Title must be 1–300 characters';
@@ -17,35 +19,15 @@ function validateEventPayload(p) {
 export async function EventsManager(container) {
   const token = sessionStorage.getItem('adminToken');
   if (!token) {
-    window.appNavigate('/admin/login');
+    window.appNavigate(ADMIN_ROUTES.login);
     return;
   }
 
-  container.innerHTML = `
-    <div class="admin-layout" style="display: flex; min-height: 100vh; background: var(--color-bg-alt);">
-      <!-- Sidebar -->
-      <aside style="width: 250px; background: white; border-right: 1px solid rgba(0,0,0,0.1); padding: 2rem 1rem; display: flex; flex-direction: column;">
-        <div style="margin-bottom: 2rem; text-align: center;">
-          <img src="/images/FGCI LOGO.png" alt="Logo" style="height: 50px; margin-bottom: 1rem;">
-          <h3 class="font-heading font-bold" style="font-size: 1.2rem;">Admin Portal</h3>
-        </div>
-        <nav class="flex flex-col gap-1">
-          <a href="/admin" class="btn btn-outline w-full text-left">Dashboard</a>
-          <a href="/admin/events" class="btn w-full text-left" style="background: var(--color-gold); color: white;">Manage Events</a>
-          <a href="/admin/products" class="btn btn-outline w-full text-left">Manage Merch</a>
-        </nav>
-      </aside>
-      
-      <!-- Main Content -->
-      <main style="flex: 1; padding: 2rem; overflow-y: auto;">
-        <div class="flex justify-between items-center mb-4">
-          <h1 class="display text-gold" style="font-size: 2rem;">Events Manager</h1>
-          <button id="btn-new-event" class="btn btn-gold">Create New Event</button>
-        </div>
-        
+  const headerExtra = `<button id="btn-new-event" class="btn btn-gold">+ New Event</button>`;
+  const innerContent = `
         <!-- Form Section (Hidden by default) -->
-        <div id="event-form-section" class="card p-4 mb-4" style="display: none;">
-          <h3 class="font-heading font-bold mb-3" id="form-title">Create Event</h3>
+        <div id="event-form-section" class="admin-card mb-4" style="display: none;">
+          <h3 class="admin-card-title mb-3" id="form-title">Create Event</h3>
           <form id="event-form" class="flex flex-col gap-3">
             <input type="hidden" id="event-id">
             <input type="hidden" id="event-existing-image">
@@ -123,29 +105,38 @@ export async function EventsManager(container) {
         </div>
 
         <!-- List Section -->
-        <div class="card p-4">
-          <h3 class="font-heading font-bold mb-3">All Events</h3>
-          <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3 class="admin-card-title">All Events</h3>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
               <thead>
-                <tr style="border-bottom: 2px solid var(--color-bg-alt);">
-                  <th style="padding: 1rem;">Title</th>
-                  <th style="padding: 1rem;">Date</th>
-                  <th style="padding: 1rem;">Category</th>
-                  <th style="padding: 1rem;">Special</th>
-                  <th style="padding: 1rem;">Status</th>
-                  <th style="padding: 1rem;">Actions</th>
+                <tr>
+                  <th>Title</th>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th>Special</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="events-table-body">
-                <tr><td colspan="6" style="padding: 1rem; text-align: center;">Loading events...</td></tr>
+                <tr><td colspan="6" class="admin-empty">Loading events…</td></tr>
               </tbody>
             </table>
           </div>
         </div>
-      </main>
-    </div>
   `;
+
+  container.innerHTML = renderAdminShell({
+    title: 'Events Manager',
+    subtitle: 'Create, edit, and feature events on the public site.',
+    current: 'events',
+    content: innerContent,
+    headerExtra
+  });
+  attachAdminShellBehavior();
 
   // UI Elements
   const formSection = document.getElementById('event-form-section');
@@ -169,22 +160,21 @@ export async function EventsManager(container) {
       
       tbody.innerHTML = '';
       if (!events || events.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="padding: 1rem; text-align: center;">No events found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="admin-empty">No events yet — create one above.</td></tr>';
         return;
       }
-      
+
       events.forEach(ev => {
         const tr = document.createElement('tr');
-        tr.style.borderBottom = '1px solid rgba(0,0,0,0.05)';
         tr.innerHTML = `
-          <td style="padding: 1rem;"><strong>${escapeHtml(ev.title)}</strong></td>
-          <td style="padding: 1rem;">${ev.date ? formatDate(ev.date) : 'N/A'}</td>
-          <td style="padding: 1rem;"><span class="badge" style="background: var(--color-bg-alt);">${escapeHtml(ev.category)}</span></td>
-          <td style="padding: 1rem;">${ev.isSpecial ? '✅' : '-'}</td>
-          <td style="padding: 1rem;">${ev.eventStatus === 'anticipatory' ? 'Flyer' : 'Confirmed'}</td>
-          <td style="padding: 1rem;">
+          <td><strong>${escapeHtml(ev.title)}</strong></td>
+          <td class="text-small text-muted">${ev.date ? formatDate(ev.date) : '—'}</td>
+          <td><span class="admin-badge is-pending">${escapeHtml(ev.category)}</span></td>
+          <td>${ev.isSpecial ? '<span class="admin-badge is-success">Yes</span>' : '<span class="text-muted">—</span>'}</td>
+          <td>${ev.eventStatus === 'anticipatory' ? '<span class="admin-badge is-pending">Flyer</span>' : '<span class="admin-badge is-success">Confirmed</span>'}</td>
+          <td>
             <button class="btn btn-outline btn-sm btn-edit" data-id="${escapeHtml(ev.id)}">Edit</button>
-            <button class="btn btn-outline btn-sm btn-delete" data-id="${escapeHtml(ev.id)}" style="border-color: #dc3545; color: #dc3545; margin-left: 0.5rem;">Del</button>
+            <button class="btn btn-outline btn-sm btn-delete" data-id="${escapeHtml(ev.id)}" style="border-color: #dc3545; color: #dc3545; margin-left: 0.4rem;">Delete</button>
           </td>
         `;
         tbody.appendChild(tr);

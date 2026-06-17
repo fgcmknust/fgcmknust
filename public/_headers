@@ -4,7 +4,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(self "https://js.paystack.co")
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://js.paystack.co https://challenges.cloudflare.com https://static.cloudflareinsights.com; script-src-elem 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://js.paystack.co https://challenges.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.paystack.co https://challenges.cloudflare.com https://cloudflareinsights.com; frame-src https://js.paystack.co https://checkout.paystack.com https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://js.paystack.co https://challenges.cloudflare.com https://static.cloudflareinsights.com; script-src-elem 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://js.paystack.co https://challenges.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.paystack.co https://challenges.cloudflare.com https://cloudflareinsights.com; frame-src https://js.paystack.co https://checkout.paystack.com https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
 
 /images/*
   Cache-Control: public, max-age=31536000, immutable
@@ -23,5 +23,19 @@
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
-/api/*
+# Private / per-user endpoints must never be cached. Public read-only
+# endpoints (devotional, products, events, config) set their own cacheable
+# Cache-Control in code and are edge-cached via the Cache API, so they are
+# intentionally NOT covered by a blanket no-store rule here.
+/api/admin/*
+  Cache-Control: no-store
+/api/pay/*
+  Cache-Control: no-store
+/api/members
+  Cache-Control: no-store
+/api/purchases
+  Cache-Control: no-store
+/api/register
+  Cache-Control: no-store
+/api/register-event
   Cache-Control: no-store
