@@ -15,6 +15,7 @@ export function renderNavbar(container) {
         <nav class="desktop-nav items-center gap-4">
           <a href="/" class="nav-link ${currentPath === '/' ? 'active' : ''}">Home</a>
           <a href="/events" class="nav-link ${currentPath === '/events' ? 'active' : ''}">Events</a>
+          <a href="/leaders" class="nav-link ${currentPath === '/leaders' ? 'active' : ''}">Leaders</a>
           <a href="/store" class="nav-link ${currentPath === '/store' ? 'active' : ''}">Store</a>
           <a href="/register" class="btn btn-gold btn-sm">Join Family</a>
         </nav>
@@ -36,6 +37,7 @@ export function renderNavbar(container) {
         <nav class="mobile-nav flex flex-col gap-2">
           <a href="/" class="mobile-link ${currentPath === '/' ? 'active-mobile-link' : ''}">Home</a>
           <a href="/events" class="mobile-link ${currentPath === '/events' ? 'active-mobile-link' : ''}">Events</a>
+          <a href="/leaders" class="mobile-link ${currentPath === '/leaders' ? 'active-mobile-link' : ''}">Leaders</a>
           <a href="/store" class="mobile-link ${currentPath === '/store' ? 'active-mobile-link' : ''}">Store</a>
           <a href="/register" class="mobile-link-join">Join Family</a>
         </nav>

@@ -16,7 +16,12 @@ export function renderEventCard(event) {
     <article class="card event-card hover-lift" data-event-id="${escapeHtml(event.id)}" data-reveal="true" data-reveal-direction="up" style="cursor: pointer;">
       <!-- Image Cover -->
       <div class="event-cover" style="height: 200px; background-color: var(--color-dark-surface);">
-        <img src="${escapeHtml(event.image)}" alt="${escapeHtml(event.title)}" loading="lazy" decoding="async">
+        <!-- decoding="sync" prevents the brief blank-image flash on iOS Safari
+             when scrolling up from the footer. With async decode, iOS evicts
+             the decoded bitmap when the card leaves the viewport, then
+             re-decodes off-thread on re-entry — that re-decode is the second
+             flicker source. Sync decode keeps the bitmap pinned. -->
+        <img src="${escapeHtml(event.image)}" alt="${escapeHtml(event.title)}" loading="lazy" decoding="sync">
 
         <!-- Category Pill -->
         <div class="position-absolute" style="top: 1rem; right: 1rem;">

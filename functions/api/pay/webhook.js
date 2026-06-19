@@ -3,6 +3,22 @@
 
 import { constantTimeEqual } from '../_auth.js';
 
+// Same whitelist as /api/pay/verify — only store fields we actually need.
+function sanitizePaystackData(data) {
+  if (!data || typeof data !== 'object') return null;
+  return {
+    reference: data.reference,
+    status: data.status,
+    amount: data.amount,
+    currency: data.currency,
+    channel: data.channel,
+    paid_at: data.paid_at,
+    transaction_date: data.transaction_date,
+    gateway_response: data.gateway_response,
+    fees: data.fees
+  };
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   const DB = env.DB;
@@ -48,7 +64,7 @@ export async function onRequestPost(context) {
           UPDATE purchases
           SET status = 'success', paystack_response = ?, updated_at = CURRENT_TIMESTAMP
           WHERE reference = ?
-        `).bind(JSON.stringify(event.data), reference).run();
+        `).bind(JSON.stringify(sanitizePaystackData(event.data)), reference).run();
       }
     } catch (err) {
       console.error('Webhook DB update failed', err);

@@ -1,6 +1,6 @@
 import { renderAdminShell, attachAdminShellBehavior } from './_layout.js';
 import { ADMIN_ROUTES } from '../../config/admin-path.js';
-import { formatGHS, escapeHtml } from '../../utils/helpers.js';
+import { formatGHS, escapeHtml, escapeAttrUrl } from '../../utils/helpers.js';
 
 const STAT_TILES = [
   { key: 'events',                    label: 'Events',                icon: 'calendar-days', href: ADMIN_ROUTES.events },
@@ -29,14 +29,17 @@ function statusBadge(status) {
 }
 
 export async function AdminDashboard(container) {
-  const token = sessionStorage.getItem('adminToken');
-  if (!token) {
+  // The real auth check is the cookie verified by /api/admin/* server-side.
+  // This flag is just an optimistic SPA hint that lets us redirect to login
+  // without making an extra round-trip; the API call below will still 401 if
+  // the session has expired, and we handle that.
+  if (sessionStorage.getItem('fgcm_admin_active') !== '1') {
     window.appNavigate(ADMIN_ROUTES.login);
     return;
   }
 
   const statsGrid = STAT_TILES.map((tile) => `
-    <a href="${tile.href ? escapeHtml(tile.href) : 'javascript:void(0)'}"
+    <a href="${tile.href ? escapeAttrUrl(tile.href) : '#'}"
        class="admin-stat ${tile.alert ? 'is-alert' : ''}"
        style="text-decoration: none; color: inherit; ${tile.href ? '' : 'cursor: default;'}">
       <div class="admin-stat-icon"><i data-lucide="${escapeHtml(tile.icon)}"></i></div>
@@ -87,12 +90,13 @@ export async function AdminDashboard(container) {
 
   // ----- Load stats ----------------------------------------------------------
   try {
-    const res = await fetch('/api/admin/stats', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    // The HttpOnly session cookie attaches automatically. credentials:
+    // 'include' is belt-and-braces in case the admin ever lives on a
+    // subdomain different from the one that set the cookie.
+    const res = await fetch('/api/admin/stats', { credentials: 'include' });
 
     if (res.status === 401) {
-      sessionStorage.removeItem('adminToken');
+      sessionStorage.removeItem('fgcm_admin_active');
       window.appNavigate(ADMIN_ROUTES.login);
       return;
     }
@@ -137,8 +141,8 @@ export async function AdminDashboard(container) {
           <td style="font-weight: 600;">${escapeHtml(formatGHS(Number(p.amount) || 0))}</td>
           <td>${statusBadge(p.status)}</td>
           <td>${p.payment_proof_url
-              ? `<a href="${escapeHtml(p.payment_proof_url)}" target="_blank" rel="noopener">
-                   <img src="${escapeHtml(p.payment_proof_url)}" alt="Proof" class="admin-proof-thumb" loading="lazy">
+              ? `<a href="${escapeAttrUrl(p.payment_proof_url)}" target="_blank" rel="noopener">
+                   <img src="${escapeAttrUrl(p.payment_proof_url)}" alt="Proof" class="admin-proof-thumb" loading="lazy">
                  </a>`
               : '<span class="text-muted text-small">—</span>'}</td>
           <td class="text-small text-muted">${escapeHtml(formatDate(p.created_at))}</td>

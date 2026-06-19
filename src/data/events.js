@@ -11,7 +11,7 @@ export const eventsData = [
       <p><strong>The Vision:</strong> Inspired by the mandate to keep the altar fire burning, it shakes off academic break lethargy and realigns students with their faith before classes demand their full attention.</p>
       <p><strong>The Experience:</strong> A powerful night featuring intimate, unhurried worship, a sharp prophetic charge tailored to campus life, and intense altar prayer for academic, mental, and spiritual resilience.</p>
     `,
-    image: "/images/Laptop.jpg",
+    image: "/images/Laptop.webp",
     category: "Service",
     isFeatured: true
   }

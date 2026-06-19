@@ -17,8 +17,8 @@ function validateProductPayload(p) {
 }
 
 export async function ProductsManager(container) {
-  const token = sessionStorage.getItem('adminToken');
-  if (!token) {
+  // Server-side cookie does the real auth; this flag just gates SPA render.
+  if (sessionStorage.getItem('fgcm_admin_active') !== '1') {
     window.appNavigate(ADMIN_ROUTES.login);
     return;
   }
@@ -191,7 +191,7 @@ export async function ProductsManager(container) {
       try {
         const uploadRes = await fetch('/api/admin/upload', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
+          credentials: 'include',
           body: formData
         });
         if (!uploadRes.ok) throw new Error('Upload failed');
@@ -236,9 +236,9 @@ export async function ProductsManager(container) {
       const method = payload.id ? 'PUT' : 'POST';
       const res = await fetch('/api/admin/products', {
         method,
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
       });
@@ -281,7 +281,7 @@ export async function ProductsManager(container) {
     try {
       const res = await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        credentials: 'include'
       });
       if (!res.ok) throw new Error('Delete failed');
       showToast('Product deleted', 'success');

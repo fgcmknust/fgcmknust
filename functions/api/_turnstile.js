@@ -34,10 +34,15 @@ export async function verifyTurnstile(token, env, request) {
       return { ok: true };
     }
     const codes = (data && Array.isArray(data['error-codes'])) ? data['error-codes'] : [];
-    console.warn('Turnstile verification failed', { codes });
+    // Only log the Turnstile error codes when DEBUG is set — these can be
+    // noisy under attack and aren't needed in steady-state.
+    if (env && env.DEBUG) {
+      console.warn('Turnstile verification failed', { codes });
+    }
     return { ok: false, error: 'CAPTCHA verification failed' };
   } catch (e) {
-    console.error('Turnstile network error', e);
+    // Network errors are rare and benign for the user — quiet by default.
+    if (env && env.DEBUG) console.error('Turnstile network error', e);
     return { ok: false, error: 'CAPTCHA verification unavailable' };
   }
 }

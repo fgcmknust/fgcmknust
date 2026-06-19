@@ -4,7 +4,7 @@
  * consistent across dashboard, events, and products managers.
  */
 
-import { escapeHtml } from '../../utils/helpers.js';
+import { escapeHtml, escapeAttrUrl } from '../../utils/helpers.js';
 import { ADMIN_ROUTES } from '../../config/admin-path.js';
 
 const NAV_ITEMS = [
@@ -28,7 +28,7 @@ export function renderAdminShell(opts) {
   const { title, subtitle = '', current, content, headerExtra = '' } = opts;
 
   const navHTML = NAV_ITEMS.map((item) => `
-    <a href="${escapeHtml(item.href)}" class="admin-nav-item ${item.key === current ? 'is-active' : ''}">
+    <a href="${escapeAttrUrl(item.href)}" class="admin-nav-item ${item.key === current ? 'is-active' : ''}">
       <i data-lucide="${escapeHtml(item.icon)}" class="admin-nav-icon"></i>
       <span>${escapeHtml(item.label)}</span>
     </a>
@@ -105,8 +105,14 @@ export function attachAdminShellBehavior() {
 
   const logoutBtn = document.getElementById('admin-logout-btn');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      try { sessionStorage.removeItem('adminToken'); } catch (e) { /* ignore */ }
+    logoutBtn.addEventListener('click', async () => {
+      // Server-side revoke: deletes the row in admin_sessions AND clears the
+      // HttpOnly cookie via Set-Cookie. We fire-and-don't-block in case the
+      // network is flaky — the SPA-side flag clears regardless.
+      try {
+        await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
+      } catch (e) { /* ignore */ }
+      try { sessionStorage.removeItem('fgcm_admin_active'); } catch (e) { /* ignore */ }
       // Hard navigate to root so the global navbar/footer re-attach cleanly.
       window.location.href = '/';
     });

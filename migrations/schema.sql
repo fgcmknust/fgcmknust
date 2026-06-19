@@ -149,6 +149,22 @@ CREATE TABLE IF NOT EXISTS rate_limits (
 CREATE INDEX IF NOT EXISTS idx_rate_limits_window ON rate_limits(window_start);
 
 -- ================================================================
+-- ADMIN SESSIONS TABLE
+-- Holds the SHA-256 hash of each issued admin session cookie value
+-- so the raw cookie is never stored. Each row has an expiry the
+-- middleware enforces; logout deletes the row.
+-- ================================================================
+CREATE TABLE IF NOT EXISTS admin_sessions (
+  session_hash TEXT PRIMARY KEY,
+  expires_at INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,
+  ip_address TEXT,
+  user_agent TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions(expires_at);
+
+-- ================================================================
 -- INITIAL SEED DATA
 -- ================================================================
 

@@ -4,7 +4,11 @@ import { mountTurnstile } from '../../utils/turnstile.js';
 import { ADMIN_ROUTES } from '../../config/admin-path.js';
 
 export async function AdminLogin(container) {
-  if (sessionStorage.getItem('adminToken')) {
+  // Soft check: if the SPA flag says we're already logged in, hop to the
+  // dashboard. The dashboard performs the real auth via the cookie; if the
+  // server says "session expired" the dashboard handles redirecting back here.
+  // We no longer keep a server token in sessionStorage at all.
+  if (sessionStorage.getItem('fgcm_admin_active') === '1') {
     window.appNavigate(ADMIN_ROUTES.dashboard);
     return;
   }
@@ -181,7 +185,11 @@ export async function AdminLogin(container) {
       const headers = { 'Authorization': `Bearer ${token}` };
       if (captchaToken) headers['X-Captcha-Token'] = captchaToken;
 
-      const res = await fetch('/api/admin/verify', { headers });
+      // credentials:'include' is needed so the browser stores the Set-Cookie
+      // the server issues. Same-origin requests would store it anyway, but
+      // being explicit guards against a future move to a separate admin
+      // subdomain.
+      const res = await fetch('/api/admin/verify', { headers, credentials: 'include' });
       if (res.status === 429) {
         const data = await res.json().catch(() => ({}));
         showToast(data.error || 'Too many attempts. Try again later.', 'error');
@@ -194,7 +202,10 @@ export async function AdminLogin(container) {
         return;
       }
 
-      sessionStorage.setItem('adminToken', token);
+      // The server now holds the session via an HttpOnly cookie. JS sees only
+      // this flag, used to gate the SPA's optimistic redirect logic — never
+      // to authorise an API request.
+      sessionStorage.setItem('fgcm_admin_active', '1');
       showToast('Login successful', 'success');
       window.appNavigate(ADMIN_ROUTES.dashboard);
     } catch (err) {

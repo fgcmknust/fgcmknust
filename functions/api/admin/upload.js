@@ -1,6 +1,8 @@
 // POST /api/admin/upload
 // Admin image upload. Auth handled by admin/_middleware.js.
 
+import { assertImageFile } from '../_magic_bytes.js';
+
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
 
 const ALLOWED_EXT = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp']);
@@ -39,6 +41,14 @@ export async function onRequestPost(context) {
     const contentType = expectedType;
     if (declaredType && !declaredType.startsWith('image/')) {
       return new Response(JSON.stringify({ error: 'Invalid file content type' }), { status: 400 });
+    }
+
+    // Magic-bytes check: peek at the file's first bytes and refuse anything
+    // whose actual content doesn't match the claimed extension. Defends
+    // against an attacker uploading e.g. a PHP/HTML payload renamed to .jpg.
+    const magic = await assertImageFile(file, ext);
+    if (!magic.ok) {
+      return new Response(JSON.stringify({ error: magic.error }), { status: 400 });
     }
 
     const filename = `uploads/${crypto.randomUUID()}.${ext}`;

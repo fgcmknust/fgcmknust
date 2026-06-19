@@ -6,8 +6,14 @@ import { readReplica } from '../_session.js';
 
 export async function onRequestGet(context) {
   const { env } = context;
-  // Dashboard counts/listing are read-only → serve from the nearest replica.
+  // Dashboard counts/listing are mostly read-only → serve from the nearest
+  // replica for speed. EXCEPTION: the awaiting_review count drives the admin's
+  // workflow ("how many MoMo screenshots need verifying?"). A few seconds of
+  // replication lag could leave a freshly-submitted proof "off-screen" until
+  // the next refresh — exactly the moment an attacker might exploit. We read
+  // that one count from the primary (env.DB) so it's always up to date.
   const DB = readReplica(env);
+  const PRIMARY = env.DB;
 
   // Run these in parallel over the replica session: each individual read is
   // replica-eligible, so they complete in ~one round trip to the nearest
@@ -28,7 +34,7 @@ export async function onRequestGet(context) {
     DB.prepare(`SELECT COUNT(*) AS c FROM members`).first(),
     DB.prepare(`SELECT COUNT(*) AS c FROM event_registrations`).first(),
     DB.prepare(`SELECT COUNT(*) AS c FROM purchases`).first(),
-    DB.prepare(`SELECT COUNT(*) AS c FROM purchases WHERE status = 'awaiting_review'`).first(),
+    PRIMARY.prepare(`SELECT COUNT(*) AS c FROM purchases WHERE status = 'awaiting_review'`).first(),
     DB.prepare(`
       SELECT reference, customer_first_name, customer_last_name, customer_email,
              amount, status, payment_method, payment_proof_url, created_at

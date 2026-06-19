@@ -5,9 +5,22 @@ export async function onRequestGet(context) {
   const segments = Array.isArray(params.path) ? params.path : [params.path];
 
   // Reject path-traversal tokens, control chars, and backslashes.
+  // Decode each segment once and check the decoded form, so doubly-encoded
+  // attacks like %252E%252E (which decode to %2E%2E and then to ..) are
+  // caught even though Pages only decodes the first layer for us.
   for (const seg of segments) {
     if (typeof seg !== 'string') return new Response('Bad path', { status: 400 });
-    if (seg === '..' || seg === '.' || seg.includes('\\')) {
+    if (seg === '..' || seg === '.' || seg.includes('\\') || seg.includes('/')) {
+      return new Response('Bad path', { status: 400 });
+    }
+    let decoded;
+    try {
+      decoded = decodeURIComponent(seg);
+    } catch (e) {
+      return new Response('Bad path', { status: 400 });
+    }
+    if (decoded === '..' || decoded === '.' ||
+        decoded.includes('..') || decoded.includes('/') || decoded.includes('\\')) {
       return new Response('Bad path', { status: 400 });
     }
     // Disallow ASCII control chars (0x00-0x1F and 0x7F).

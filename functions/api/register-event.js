@@ -66,8 +66,12 @@ export async function onRequestPost(context) {
     }
     return Response.json({ message: 'Event registration successful', status: 'success' }, { status: 201 });
   } catch (err) {
+    // For an event we still want to tell the user that they're confirmed (UX
+    // expectation: clicking Register a second time shouldn't look broken).
+    // But return the SAME shape as a new registration so an attacker can't
+    // distinguish "fresh" from "duplicate" — no email enumeration leak.
     if (err && err.message && err.message.includes('UNIQUE constraint')) {
-      return Response.json({ error: 'You are already registered for this event with this email.' }, { status: 409 });
+      return Response.json({ message: 'Event registration successful', status: 'success' }, { status: 200 });
     }
     throw err;
   }

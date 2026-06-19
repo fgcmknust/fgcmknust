@@ -3,6 +3,25 @@
 
 import { isValidReference } from '../_validation.js';
 
+// Whitelist only the fields we actually use when reviewing a transaction —
+// keeps the card-adjacent / PCI-scope authorization block (last 4, BIN, bank,
+// auth_code, etc.) OUT of D1. Paystack remains the source of truth for the
+// full payload if we ever need it.
+function sanitizePaystackData(data) {
+  if (!data || typeof data !== 'object') return null;
+  return {
+    reference: data.reference,
+    status: data.status,
+    amount: data.amount,
+    currency: data.currency,
+    channel: data.channel,
+    paid_at: data.paid_at,
+    transaction_date: data.transaction_date,
+    gateway_response: data.gateway_response,
+    fees: data.fees
+  };
+}
+
 export async function onRequestGet(context) {
   const { request, env } = context;
   const DB = env.DB;
@@ -41,7 +60,7 @@ export async function onRequestGet(context) {
           UPDATE purchases
           SET status = 'amount_mismatch', paystack_response = ?, updated_at = CURRENT_TIMESTAMP
           WHERE reference = ?
-        `).bind(JSON.stringify(data), reference).run();
+        `).bind(JSON.stringify(sanitizePaystackData(data)), reference).run();
         return new Response(JSON.stringify({ error: 'Payment amount mismatch' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
       }
     }
@@ -50,7 +69,7 @@ export async function onRequestGet(context) {
       UPDATE purchases
       SET status = 'success', paystack_response = ?, updated_at = CURRENT_TIMESTAMP
       WHERE reference = ?
-    `).bind(JSON.stringify(data), reference).run();
+    `).bind(JSON.stringify(sanitizePaystackData(data)), reference).run();
 
     return new Response(JSON.stringify({
       status: 'success',
@@ -64,7 +83,7 @@ export async function onRequestGet(context) {
     UPDATE purchases
     SET status = ?, paystack_response = ?, updated_at = CURRENT_TIMESTAMP
     WHERE reference = ?
-  `).bind(failStatus, JSON.stringify(data || {}), reference).run();
+  `).bind(failStatus, JSON.stringify(sanitizePaystackData(data) || {}), reference).run();
 
   return new Response(JSON.stringify({
     error: 'Payment not successful',

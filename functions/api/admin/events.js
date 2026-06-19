@@ -48,6 +48,11 @@ export async function onRequestPost(context) {
 
     return new Response(JSON.stringify({ success: true, id }), { headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
+    // Surface duplicate IDs as a friendlier 409 instead of a generic 500.
+    const msg = (error && error.message) || '';
+    if (msg.includes('UNIQUE constraint') || msg.toLowerCase().includes('constraint')) {
+      return new Response(JSON.stringify({ error: 'An event with this ID already exists' }), { status: 409 });
+    }
     console.error('Admin event create failed', error);
     return new Response(JSON.stringify({ error: 'Failed to create event' }), { status: 500 });
   }

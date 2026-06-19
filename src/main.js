@@ -49,6 +49,7 @@ function updateFooterLock() {
 const routes = {
   '/': lazy(() => import('./pages/home.js'), 'Home'),
   '/events': lazy(() => import('./pages/events.js'), 'Events'),
+  '/leaders': lazy(() => import('./pages/leaders.js'), 'Leaders'),
   '/store': lazy(() => import('./pages/store.js'), 'Store'),
   '/product': lazy(() => import('./pages/product.js'), 'Product'),
   '/register': lazy(() => import('./pages/register.js'), 'Register'),

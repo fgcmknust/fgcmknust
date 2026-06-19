@@ -20,6 +20,7 @@ import {
 } from '../_validation.js';
 import { rateLimit, tooManyRequests, getClientIp } from '../_rate_limit.js';
 import { verifyTurnstile, captchaFailedResponse } from '../_turnstile.js';
+import { assertImageFile } from '../_magic_bytes.js';
 // computeChargeBreakdown intentionally NOT imported here — the manual MoMo
 // flow charges the raw cart subtotal only (no processing fee), so the amount
 // stored in `purchases.amount` is exactly what the customer paid via MoMo.
@@ -73,7 +74,9 @@ async function priceCart(DB, items) {
     total += price * qtyById.get(id);
   }
   if (unknownIds.length > 0) {
-    // Log to help diagnose (showed up most often as a never-seeded prod DB).
+    // Product IDs aren't sensitive — keeping this as a noisy warn is fine
+    // because it's the only signal we have that prod DB is missing rows the
+    // cart references.
     console.warn('priceCart: unknown product ids', JSON.stringify(unknownIds));
     return {
       ok: false,
@@ -131,6 +134,14 @@ export async function onRequestPost(context) {
   }
   const ext = rawExt === 'jpeg' ? 'jpg' : rawExt;
   const contentType = EXT_TO_MIME[rawExt];
+
+  // Magic-bytes check before anything else costly. If the screenshot is not
+  // actually a JPEG/PNG/WEBP/GIF, reject up-front so we never spend a
+  // Turnstile lookup, DB read, or R2 write on a malformed payload.
+  const magic = await assertImageFile(proof, rawExt);
+  if (!magic.ok) {
+    return badRequest(magic.error);
+  }
 
   // ---- Parse + validate JSON envelope ---------------------------------------
   if (!dataRaw || typeof dataRaw !== 'string') {

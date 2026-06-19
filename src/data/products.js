@@ -4,7 +4,7 @@ export const productsData = [
     name: "Keepers of The Flame T-shirt",
     price: 60,
     description: "T-shirt used for the Keepers of the Flame event.",
-    image: "/images/merch.jpg",
+    image: "/images/merch.webp",
     sizes: ["S", "M", "L", "XL", "XXL", "3XL"],
     colors: ["Black", "White", "Light Green"],
     category: "T-Shirts",

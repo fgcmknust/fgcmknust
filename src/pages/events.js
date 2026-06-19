@@ -20,9 +20,15 @@ export async function Events(container) {
   const heroHTML = renderHero({
     title: 'Events & Programs',
     subtitle: 'Stay connected with what God is doing on campus',
-    bgImage: '/images/event-youth.jpg',
-    height: '40vh',
-    overlayOpacity: 0.7,
+    bgImage: '/images/event-youth.webp',
+    mobileBgImage: '/images/event-youth.webp',
+    // Match the home page's cinematic 16:9 hero on desktop. Mobile keeps a
+    // shorter banner so the events grid below stays close to the fold.
+    height: 'auto; aspect-ratio: 16 / 9',
+    mobileHeight: '40vh',
+    mobileBgSize: 'cover',
+    mobileBgPosition: 'center center',
+    overlayOpacity: 0.7
     // breadcrumbs intentionally removed per design
   });
 
@@ -89,7 +95,9 @@ export async function Events(container) {
         ? `<a href="https://maps.app.goo.gl/i8Aw8zWGq6162fgQ8" target="_blank" style="text-decoration: underline; color: inherit;" class="hover-gold">${escapeHtml(event.venue || 'TBA')}</a>`
         : escapeHtml(event.venue || 'TBA');
 
-      // Dynamically load showModal and launch it
+      // Dynamically load showModal and launch it. Note: NO `onclick="..."`
+      // attributes — they would be blocked by the strict CSP. We attach
+      // listeners by class after showModal renders the content.
       const { showModal } = await import('../components/modal.js');
       const content = `
         <div class="flex flex-col gap-2">
@@ -101,12 +109,18 @@ export async function Events(container) {
           </div>
           <div class="text-small text-muted" style="line-height: 1.6; margin-bottom: 1rem;">${event.description}</div>
           <div class="flex gap-1 mt-auto justify-end">
-            <button class="btn btn-outline btn-sm" onclick="window.closeModal()">Close</button>
-            <a href="/event-registration" data-event-id="${escapeHtml(event.id)}" onclick="window.closeModal()" class="btn btn-gold btn-sm">Register Now</a>
+            <button class="btn btn-outline btn-sm" data-action="close-event-modal">Close</button>
+            <a href="/event-registration" data-event-id="${escapeHtml(event.id)}" data-action="close-event-modal" class="btn btn-gold btn-sm">Register Now</a>
           </div>
         </div>
       `;
       showModal(event.title, content);
+      // Wire the close handlers post-render.
+      document.querySelectorAll('[data-action="close-event-modal"]').forEach((el) => {
+        el.addEventListener('click', () => {
+          if (typeof window.closeModal === 'function') window.closeModal();
+        });
+      });
     }
   }
 }

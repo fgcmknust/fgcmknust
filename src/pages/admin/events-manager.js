@@ -17,8 +17,9 @@ function validateEventPayload(p) {
 }
 
 export async function EventsManager(container) {
-  const token = sessionStorage.getItem('adminToken');
-  if (!token) {
+  // Server-side cookie is the real auth; this flag just lets the SPA decide
+  // whether to render the page or kick the user to login first.
+  if (sessionStorage.getItem('fgcm_admin_active') !== '1') {
     window.appNavigate(ADMIN_ROUTES.login);
     return;
   }
@@ -263,9 +264,11 @@ export async function EventsManager(container) {
       formData.append('file', file);
       
       try {
+        // The HttpOnly admin session cookie attaches automatically; we no
+        // longer place the Bearer token in JS-readable storage.
         const uploadRes = await fetch('/api/admin/upload', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
+          credentials: 'include',
           body: formData
         });
         if (!uploadRes.ok) throw new Error('Upload failed');
@@ -312,9 +315,9 @@ export async function EventsManager(container) {
       const method = payload.id ? 'PUT' : 'POST';
       const res = await fetch('/api/admin/events', {
         method,
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
       });
@@ -370,7 +373,7 @@ export async function EventsManager(container) {
     try {
       const res = await fetch(`/api/admin/events?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        credentials: 'include'
       });
       if (!res.ok) throw new Error('Delete failed');
       showToast('Event deleted', 'success');

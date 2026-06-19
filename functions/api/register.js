@@ -61,8 +61,13 @@ export async function onRequestPost(context) {
     if (!result.success) throw new Error('Database insertion failed');
     return Response.json({ message: 'Registration successful', status: 'success' }, { status: 201 });
   } catch (err) {
+    // Email enumeration defense: return the SAME success-shaped response on a
+    // duplicate-email collision as on a brand-new registration. Without this
+    // an attacker could probe arbitrary emails to learn which ones belong to
+    // members. Real new sign-ups still write the row; existing members get a
+    // benign no-op response (status 200, not 201, in case the client distinguishes).
     if (err && err.message && err.message.includes('UNIQUE constraint')) {
-      return Response.json({ error: 'A member with this email already exists.' }, { status: 409 });
+      return Response.json({ message: 'Registration successful', status: 'success' }, { status: 200 });
     }
     throw err;
   }

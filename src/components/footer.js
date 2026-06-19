@@ -1,5 +1,5 @@
 import { churchInfo } from '../data/church-info.js';
-import { escapeHtml } from '../utils/helpers.js';
+import { escapeHtml, escapeAttrUrl } from '../utils/helpers.js';
 
 export function renderFooter(container) {
   const footerHTML = `
@@ -20,22 +20,22 @@ export function renderFooter(container) {
           <div class="footer-col social footer-centered">
             <h4 class="footer-subtitle mb-1">Follow Us</h4>
             <div class="social-icons flex gap-1 justify-center" style="flex-wrap: wrap;">
-              <a href="${escapeHtml(churchInfo.socials.facebook)}" target="_blank" rel="noopener" class="social-btn" aria-label="Facebook">
+              <a href="${escapeAttrUrl(churchInfo.socials.facebook)}" target="_blank" rel="noopener" class="social-btn" aria-label="Facebook">
                 <img src="/images/facebook.svg" alt="" style="width: 14px; height: 14px; filter: brightness(0) invert(1);" />
               </a>
-              <a href="${escapeHtml(churchInfo.socials.instagram)}" target="_blank" rel="noopener" class="social-btn" aria-label="Instagram">
+              <a href="${escapeAttrUrl(churchInfo.socials.instagram)}" target="_blank" rel="noopener" class="social-btn" aria-label="Instagram">
                 <img src="/images/instagram.svg" alt="" style="width: 14px; height: 14px; filter: brightness(0) invert(1);" />
               </a>
-              <a href="${escapeHtml(churchInfo.socials.twitter)}" target="_blank" rel="noopener" class="social-btn" aria-label="X (Twitter)">
+              <a href="${escapeAttrUrl(churchInfo.socials.twitter)}" target="_blank" rel="noopener" class="social-btn" aria-label="X (Twitter)">
                 <img src="/images/x.svg" alt="" style="width: 14px; height: 14px; filter: brightness(0) invert(1);" />
               </a>
-              <a href="${escapeHtml(churchInfo.socials.youtube)}" target="_blank" rel="noopener" class="social-btn" aria-label="YouTube">
+              <a href="${escapeAttrUrl(churchInfo.socials.youtube)}" target="_blank" rel="noopener" class="social-btn" aria-label="YouTube">
                 <img src="/images/youtube.svg" alt="" style="width: 14px; height: 14px; filter: brightness(0) invert(1);" />
               </a>
-              <a href="${escapeHtml(churchInfo.socials.tiktok)}" target="_blank" rel="noopener" class="social-btn" aria-label="TikTok">
+              <a href="${escapeAttrUrl(churchInfo.socials.tiktok)}" target="_blank" rel="noopener" class="social-btn" aria-label="TikTok">
                 <img src="/images/tiktok.svg" alt="" style="width: 14px; height: 14px; filter: brightness(0) invert(1);" />
               </a>
-              <a href="${escapeHtml(churchInfo.socials.threads)}" target="_blank" rel="noopener" class="social-btn" aria-label="Threads">
+              <a href="${escapeAttrUrl(churchInfo.socials.threads)}" target="_blank" rel="noopener" class="social-btn" aria-label="Threads">
                 <img src="/images/threads.svg" alt="" style="width: 14px; height: 14px; filter: brightness(0) invert(1);" />
               </a>
             </div>
@@ -57,19 +57,19 @@ export function renderFooter(container) {
           </div>
 
           <div class="footer-socials" aria-label="Social media">
-            <a href="${escapeHtml(churchInfo.socials.facebook)}" target="_blank" rel="noopener" aria-label="Facebook">
+            <a href="${escapeAttrUrl(churchInfo.socials.facebook)}" target="_blank" rel="noopener" aria-label="Facebook">
               <img src="/images/facebook.svg" alt="" />
             </a>
-            <a href="${escapeHtml(churchInfo.socials.instagram)}" target="_blank" rel="noopener" aria-label="Instagram">
+            <a href="${escapeAttrUrl(churchInfo.socials.instagram)}" target="_blank" rel="noopener" aria-label="Instagram">
               <img src="/images/instagram.svg" alt="" />
             </a>
-            <a href="${escapeHtml(churchInfo.socials.twitter)}" target="_blank" rel="noopener" aria-label="X (Twitter)">
+            <a href="${escapeAttrUrl(churchInfo.socials.twitter)}" target="_blank" rel="noopener" aria-label="X (Twitter)">
               <img src="/images/x.svg" alt="" />
             </a>
-            <a href="${escapeHtml(churchInfo.socials.youtube)}" target="_blank" rel="noopener" aria-label="YouTube">
+            <a href="${escapeAttrUrl(churchInfo.socials.youtube)}" target="_blank" rel="noopener" aria-label="YouTube">
               <img src="/images/youtube.svg" alt="" />
             </a>
-            <a href="${escapeHtml(churchInfo.socials.tiktok)}" target="_blank" rel="noopener" aria-label="TikTok">
+            <a href="${escapeAttrUrl(churchInfo.socials.tiktok)}" target="_blank" rel="noopener" aria-label="TikTok">
               <img src="/images/tiktok.svg" alt="" />
             </a>
           </div>

@@ -7,10 +7,22 @@ export function isValidEmail(email) {
   return re.test(email.toLowerCase());
 }
 
+// Phone validation:
+// - strip whitespace, dashes, brackets, plus
+// - reject if too short / too long for E.164
+// - reject if the first non-zero digit doesn't look like a country/national
+//   prefix (avoids accepting strings like "000000000")
+// - all-zero / all-same-digit numbers are rejected
 export function isValidPhoneSimple(phone) {
   if (!phone || typeof phone !== 'string') return false;
   const cleaned = phone.replace(/[\s\-()+]/g, '');
-  return /^\d{9,15}$/.test(cleaned);
+  if (!/^\d{9,15}$/.test(cleaned)) return false;
+  // Reject N-of-the-same-digit (e.g. 0000000000, 9999999999).
+  if (/^(\d)\1+$/.test(cleaned)) return false;
+  // After dropping any leading zero(s), require at least 8 meaningful digits.
+  const trimmed = cleaned.replace(/^0+/, '');
+  if (trimmed.length < 8) return false;
+  return true;
 }
 
 // Allow letters from any language, plus spaces, apostrophes, hyphens, and dots.

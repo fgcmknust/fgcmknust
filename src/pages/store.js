@@ -15,12 +15,11 @@ export async function Store(container) {
     console.error('API failed, using fallback data');
   }
 
-  // Use merch.jpg (present in public/images) and match home hero behavior
   const heroHTML = renderHero({
     title: '',
     subtitle: '',
-    bgImage: '/images/merch.jpg',
-    mobileBgImage: '/images/mobile-store.jpg',
+    bgImage: '/images/merch.webp',
+    mobileBgImage: '/images/mobile-store.webp',
     height: 'auto; aspect-ratio: 16 / 9',
     mobileHeight: 'var(--mobile-vh, 100vh)',
     mobileBgSize: 'cover',
@@ -63,9 +62,8 @@ export async function Store(container) {
   if (window.lucide) lucide.createIcons({ root: container });
   Animations.initScrollReveals(container);
 
-  // Initialize premium hero animations similar to home page
   const bg = container.querySelector('#hero-parallax-bg');
-  if (bg) Animations.premiumHero(bg, []);
+  if (bg) requestAnimationFrame(() => requestAnimationFrame(() => Animations.premiumHero(bg, [])));
 
   // Filter Logic
   const filterBtns = container.querySelectorAll('.store-filter-btn');

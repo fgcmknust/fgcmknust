@@ -149,7 +149,9 @@ export async function Home(container) {
         </div>
         <div data-reveal="true" data-reveal-direction="left" class="position-relative welcome-media">
            <div class="rounded shadow-lg" style="height: 400px; overflow: hidden;">
-             <img src="/images/Ethel.jpeg" alt="Min. Ethel Namatey — President, FGCM-KNUST" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover; object-position: center 20%; transform: scale(1.12); transform-origin: center 30%;">
+             <!-- decoding="sync" so iOS doesn't blank this image during
+                  re-decode on scroll-up (see event-card.js + index.css notes). -->
+             <img src="/images/Ethel.webp" alt="Min. Ethel Namatey — President, FGCM-KNUST" loading="lazy" decoding="sync" style="width: 100%; height: 100%; object-fit: cover; object-position: center 20%; transform: scale(1.12); transform-origin: center 30%;">
            </div>
            <div class="position-absolute p-2 rounded" style="bottom: -2rem; right: 2rem; max-width: 220px; background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.25); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);">
               <p class="font-bold text-small mb-0" style="color: #000; text-shadow: 0 1px 3px rgba(255,255,255,0.55);">President - FGCM-KNUST</p>
@@ -199,11 +201,6 @@ export async function Home(container) {
             </div>
           </div>
         </div>
-        <div class="text-center mt-4" data-reveal="true" data-reveal-direction="up" data-reveal-delay="200">
-          <button class="btn btn-outline" onclick="window.location.reload();" style="border-radius: 30px; padding: 0.5rem 1.5rem;">
-            <i data-lucide="refresh-cw" class="mr-1" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></i> Read Another
-          </button>
-        </div>
       </div>
     </section>
 
@@ -232,7 +229,9 @@ export async function Home(container) {
   } else {
     const bg = document.getElementById('hero-parallax-bg');
     const heroButtons = container.querySelectorAll('.position-absolute .btn');
-    if (bg) Animations.premiumHero(bg, heroButtons);
+    // Defer past first paint so the GSAP scale+blur work doesn't block the
+    // browser from processing the first user interaction (was 728ms Poor INP).
+    if (bg) requestAnimationFrame(() => requestAnimationFrame(() => Animations.premiumHero(bg, heroButtons)));
 
     // Store image in sessionStorage when default hero Register is clicked
     container.querySelectorAll('.hero-register-btn').forEach(btn => {

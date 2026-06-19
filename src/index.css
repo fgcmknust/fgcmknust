@@ -105,11 +105,15 @@ select,
   -webkit-touch-callout: default;
 }
 
-/* Block image drag-save too, for visual consistency with the no-copy policy. */
+/* Block image drag-save and browser visual search icon (Chrome/Edge show a
+   lens button when the cursor is directly on an <img> element — pointer-events:
+   none makes the element invisible to hit-testing, so the icon never appears).
+   Clicks fall through to the parent container, so linked images still work. */
 img {
   -webkit-user-drag: none;
   user-drag: none;
   -webkit-touch-callout: none;
+  pointer-events: none;
 }
 
 /* ---------- Typography ---------- */
@@ -774,6 +778,16 @@ img {
 
 .form-control {
   width: 100%;
+  /* box-sizing so the 1rem horizontal padding stays INSIDE the declared
+     width; without it, iOS Safari's native date widget adds its picker
+     glyph padding ON TOP of width: 100%, which overflowed the grid column
+     on the registration page's "Date of Birth" field. */
+  box-sizing: border-box;
+  /* Grid items default to min-width: auto (their intrinsic content width).
+     iOS date inputs report a wide intrinsic width because of the placeholder
+     date string + picker glyph. min-width: 0 lets them shrink to fit. */
+  min-width: 0;
+  max-width: 100%;
   padding: 0.75rem 1rem;
   font-family: var(--font-body);
   font-size: 1rem;
@@ -782,6 +796,26 @@ img {
   background-color: var(--color-surface);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
+
+/* iOS Safari ships <input type="date"> with -webkit-appearance: textfield,
+   which adds its own internal padding and a sized-to-text placeholder that
+   ignores width: 100%. Stripping the native appearance lets our own width
+   rules apply, and the iOS date wheel still opens on tap. */
+input[type="date"].form-control,
+input[type="time"].form-control,
+input[type="datetime-local"].form-control,
+input[type="month"].form-control,
+input[type="week"].form-control {
+  -webkit-appearance: none;
+  appearance: none;
+  /* Match the height of <input type="text"> so the row stays aligned. */
+  min-height: calc(1rem + 1.5rem + 2px);
+}
+
+/* Also make sure the form-group itself can shrink inside a grid column —
+   without this, a single date input in a grid-2 row still blows out on
+   very narrow viewports. */
+.form-group { min-width: 0; }
 
 .form-control:focus {
   outline: none;
@@ -1145,6 +1179,32 @@ body.no-scroll {
   z-index: 1;
 }
 
+/* Hero uses <picture><img> instead of CSS background-image so the browser
+   preload scanner can discover and fetch it during HTML parse. The img fills
+   the container exactly like a background-size:cover image. */
+.page-hero .hero-bg picture,
+.page-hero .hero-bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Reserve footer height before the JS shell renders renderFooter().
+   Without this, the footer-container starts at 0px height then expands on
+   DOMContentLoaded, shifting all page content up — causing CLS of ~0.1.
+   The compact mobile footer is ~64px; desktop full footer is ~100px. */
+#footer-container {
+  min-height: 64px;
+}
+@media (min-width: 768px) {
+  #footer-container {
+    min-height: 100px;
+  }
+}
+
 .page-hero .hero-overlay {
   position: absolute;
   top: 0;
@@ -1415,7 +1475,7 @@ body.no-scroll {
    REGISTER PAGE & EVENT REGISTRATION HERO
    ========================================================= */
 .register-hero {
-  background-image: url('/images/Regis.jpg');
+  background-image: url('/images/Regis.webp');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -1960,14 +2020,20 @@ body.no-scroll {
     background-color: transparent !important;
   }
 
-  /* --- Navbar: locked near-solid white matching iOS status bar (small opacity) --- */
+  /* --- Navbar on mobile: SOLID white, NO backdrop-filter ---
+     iOS Safari was flickering the welcome + featured-events sections when
+     scrolling up because the URL-bar animation forced the fixed navbar's
+     backdrop-filter to re-rasterize on every frame, and the resulting
+     compositor re-mix bled into the layers below. Going solid removes the
+     blur sampling entirely — no flicker, identical visual result at
+     opacity 1.0 vs 0.92. */
   .navbar,
   .navbar.transparent,
   .navbar.solid,
   .navbar.solid.register-page-nav {
-    background: rgba(255, 255, 255, 0.92) !important;
-    backdrop-filter: blur(14px) saturate(160%) !important;
-    -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+    background: #FFFFFF !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05) !important;
     border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
     padding: 0.6rem 0 !important;
@@ -2102,26 +2168,80 @@ body.no-scroll {
     background-repeat: no-repeat !important;
   }
 
-  /* --- iOS scroll-up blink defenses ---
-     1. Force data-reveal elements visible. Even though Animations.js skips
-        ScrollTrigger on mobile, this is the safety net that guarantees
-        nothing ever sits at opacity 0 if a regression sneaks back in.
-     2. Promote major sections to their own GPU compositor layer so iOS Safari
-        does not repaint their pixels when the address bar slides in (which
-        was the visible blink when scrolling up from the footer). */
+  /* <picture><img> hero: match cover behaviour on mobile. */
+  .page-hero .hero-bg picture,
+  .page-hero .hero-bg img {
+    object-fit: cover !important;
+    object-position: center center !important;
+  }
+
+  /* --- iOS scroll-up blink defenses (final) ---
+     A deep-dive turned up THREE residual blink sources that none of the
+     earlier fixes could touch:
+
+     (a) :hover styles activated during touch-scroll. When you swipe up on the
+         welcome card or an event card, iOS Safari briefly engages :hover
+         BEFORE recognising the gesture as a scroll. .hover-lift translates the
+         card up 8 px and .event-card:hover scales the image to 1.05. When
+         iOS releases hover, the transitions animate everything back. That
+         touch-jump + revert is the blink you see on every upward swipe.
+
+     (b) decoding="async" on lazy-loaded images. iOS evicts decoded image
+         bitmaps under memory pressure when they leave the viewport. On scroll
+         back up, the bitmap is re-decoded off-thread; for a frame the <img>
+         renders blank. That's the second flash, layered on top of (a).
+
+     (c) Earlier translateZ(0) on .section created a compositor layer that
+         then had to composite the cards' hover transforms on top of it. The
+         double layer chain made iOS thrash between paints. Removing it
+         simplifies the layer tree.
+
+     Fix (a): kill the hover transforms on any device without a real pointer.
+     Fix (b): force above-the-fold images to decode synchronously (handled in
+              the page templates, not here).
+     Fix (c): drop the section translateZ — the navbar no longer carries a
+              backdrop-filter, so we don't need the layer promotion. */
   .welcome-section [data-reveal],
   .section [data-reveal],
   [data-reveal] {
     opacity: 1 !important;
     transform: none !important;
   }
-  .welcome-section,
-  .section {
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+}
+
+/* (a) Kill hover transforms on touch devices so a touch-scroll doesn't
+   briefly translateY the card and scale the image, then animate them back.
+   Lives OUTSIDE the max-width media query because @media (hover: none) is
+   the correct way to detect a touch device — laptops with touchscreens are
+   wider than 768 px but still benefit. */
+@media (hover: none), (pointer: coarse) {
+  .hover-lift,
+  .hover-lift:hover,
+  .card.hover-lift,
+  .card.hover-lift:hover,
+  .event-card,
+  .event-card:hover,
+  .event-card:hover .event-cover img,
+  .event-cover img,
+  .leader:hover .leader-circle {
+    transform: none !important;
+    box-shadow: var(--shadow-sm) !important;
   }
+  /* And remove the transitions on those properties so there is nothing to
+     animate back from in the first place. */
+  .hover-lift,
+  .card,
+  .card.hover-lift,
+  .event-card,
+  .event-cover img,
+  .leader-circle {
+    transition: none !important;
+  }
+}
+
+/* Re-open the mobile media query so the rest of the file's mobile rules
+   continue to apply. */
+@media (max-width: 768px) {
 
   /* --- Home page Welcome section: keep only h2 + paragraph; hide quote, image, badge --- */
   .welcome-section .welcome-quote,
