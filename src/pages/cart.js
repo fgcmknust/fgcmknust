@@ -76,15 +76,16 @@ export async function Cart(container) {
               <div class="cart-items flex flex-col gap-2">
                 ${items.map(item => `
                   <div class="cart-item flex gap-2 items-center pb-2 border-b">
-                    <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="bg-bg-alt rounded" loading="lazy" decoding="async" style="width: 80px; height: 80px; object-fit: contain; padding: 0.25rem;">
+                    <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="bg-bg-alt rounded" loading="lazy" decoding="async" style="width: 80px; height: 80px; object-fit: contain; padding: 0.25rem; flex-shrink: 0;">
                     <div class="flex-1">
                       <h4 class="text-small mb-0 font-body">${escapeHtml(item.name)}</h4>
                       <p class="text-muted text-small mb-0">Size: ${escapeHtml(item.size)}${item.color ? ' • Colour: ' + escapeHtml(item.color) : ''}</p>
                     </div>
-                    <div class="text-right">
+                    <div class="text-right" style="flex-shrink: 0;">
                       <p class="font-bold mb-0">${formatGHS(item.price * item.quantity)}</p>
                       <p class="text-muted text-small mb-0">Qty: ${Number(item.quantity)}</p>
                     </div>
+                    <button class="cart-remove-btn" data-id="${escapeHtml(item.id)}" data-size="${escapeHtml(item.size)}" data-color="${escapeHtml(item.color || '')}" aria-label="Remove item" style="background:none;border:none;cursor:pointer;padding:0.35rem;color:#aaa;flex-shrink:0;line-height:1;touch-action:manipulation;"><i data-lucide="trash-2" style="width:16px;height:16px;display:block;pointer-events:none;"></i></button>
                   </div>
                 `).join('')}
               </div>
@@ -151,6 +152,14 @@ export async function Cart(container) {
 
   container.innerHTML = html;
   if (window.lucide) lucide.createIcons({ root: container });
+
+  // Remove individual items — works on both desktop and mobile
+  container.querySelector('.cart-items').addEventListener('click', async (e) => {
+    const btn = e.target.closest('.cart-remove-btn');
+    if (!btn) return;
+    CartStore.removeItem(btn.dataset.id, btn.dataset.size, btn.dataset.color || null);
+    await Cart(container);
+  });
 
   const payBtn = document.getElementById('pay-btn');
   const form = document.getElementById('checkout-form');

@@ -111,8 +111,8 @@ export const leadersData = [
     id: 'financial-secretary',
     order: 8,
     name: 'Min. Stephanie Aggor',
-    role: 'Financial Secretary',
-    program: 'BSc Economics',
+    role: 'Financial & Prayer Secretary',
+    program: 'BA Economics',
     image: '/images/Stephanie.webp',
     // Landscape source (5184x3456). 2.1x zoom. Anchor nudged to 55%/5% —
     // X drifts slightly right of centre so the scale shifts her LEFT a touch,

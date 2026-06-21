@@ -12,8 +12,9 @@
 export const ADMIN_BASE = '/admin';
 
 export const ADMIN_ROUTES = {
-  login: `${ADMIN_BASE}/login`,
-  dashboard: ADMIN_BASE,
-  events: `${ADMIN_BASE}/events`,
-  products: `${ADMIN_BASE}/products`
+  login:      `${ADMIN_BASE}/login`,
+  dashboard:  ADMIN_BASE,
+  events:     `${ADMIN_BASE}/events`,
+  products:   `${ADMIN_BASE}/products`,
+  attendance: `${ADMIN_BASE}/attendance`
 };

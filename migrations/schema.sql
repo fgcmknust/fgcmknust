@@ -165,6 +165,42 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
 CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions(expires_at);
 
 -- ================================================================
+-- ATTENDANCE SESSIONS TABLE
+-- Admin creates one per event window; QR code always points to /attendance
+-- ================================================================
+CREATE TABLE IF NOT EXISTS attendance_sessions (
+  id         TEXT    PRIMARY KEY,
+  label      TEXT    NOT NULL,
+  event_id   TEXT,
+  opens_at   INTEGER NOT NULL,
+  closes_at  INTEGER NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_att_sessions_times ON attendance_sessions(opens_at, closes_at);
+
+-- ================================================================
+-- ATTENDANCE RECORDS TABLE
+-- One row per phone per session.
+-- device_id (localStorage UUID) prevents the same physical phone from marking
+-- attendance for a second person using a different phone number.
+-- ================================================================
+CREATE TABLE IF NOT EXISTS attendance_records (
+  id         TEXT    PRIMARY KEY,
+  session_id TEXT    NOT NULL REFERENCES attendance_sessions(id) ON DELETE CASCADE,
+  member_id  TEXT    REFERENCES members(id),
+  full_name  TEXT    NOT NULL,
+  phone      TEXT    NOT NULL,
+  device_id  TEXT,
+  marked_at  INTEGER NOT NULL,
+  UNIQUE(session_id, phone)
+);
+
+CREATE INDEX IF NOT EXISTS idx_att_records_session ON attendance_records(session_id);
+CREATE INDEX IF NOT EXISTS idx_att_records_phone   ON attendance_records(phone);
+CREATE INDEX IF NOT EXISTS idx_att_records_device  ON attendance_records(session_id, device_id);
+
+-- ================================================================
 -- INITIAL SEED DATA
 -- ================================================================
 

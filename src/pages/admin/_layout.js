@@ -8,9 +8,10 @@ import { escapeHtml, escapeAttrUrl } from '../../utils/helpers.js';
 import { ADMIN_ROUTES } from '../../config/admin-path.js';
 
 const NAV_ITEMS = [
-  { key: 'dashboard', label: 'Dashboard', href: ADMIN_ROUTES.dashboard, icon: 'layout-dashboard' },
-  { key: 'events',    label: 'Events',    href: ADMIN_ROUTES.events,    icon: 'calendar-days' },
-  { key: 'products',  label: 'Merch',     href: ADMIN_ROUTES.products,  icon: 'shopping-bag' }
+  { key: 'dashboard',  label: 'Dashboard',  href: ADMIN_ROUTES.dashboard,  icon: 'layout-dashboard' },
+  { key: 'events',     label: 'Events',     href: ADMIN_ROUTES.events,     icon: 'calendar-days' },
+  { key: 'products',   label: 'Merch',      href: ADMIN_ROUTES.products,   icon: 'shopping-bag' },
+  { key: 'attendance', label: 'Attendance', href: ADMIN_ROUTES.attendance, icon: 'clipboard-check' }
 ];
 
 /**

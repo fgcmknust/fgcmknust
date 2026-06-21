@@ -48,6 +48,7 @@ function updateFooterLock() {
 // Define Routes — each entry resolves its page module on demand.
 const routes = {
   '/': lazy(() => import('./pages/home.js'), 'Home'),
+  '/attendance': lazy(() => import('./pages/attendance.js'), 'Attendance'),
   '/events': lazy(() => import('./pages/events.js'), 'Events'),
   '/leaders': lazy(() => import('./pages/leaders.js'), 'Leaders'),
   '/store': lazy(() => import('./pages/store.js'), 'Store'),
@@ -60,10 +61,11 @@ const routes = {
   // Admin routes live under a private slug (see src/config/admin-path.js).
   // Visitors hitting /admin, /admin/login, /wp-admin, /administrator, etc. just
   // see the public 404 — the portal isn't discoverable from path-scanning.
-  [ADMIN_ROUTES.login]:     lazy(() => import('./pages/admin/login.js'),            'AdminLogin'),
-  [ADMIN_ROUTES.dashboard]: lazy(() => import('./pages/admin/dashboard.js'),        'AdminDashboard'),
-  [ADMIN_ROUTES.events]:    lazy(() => import('./pages/admin/events-manager.js'),   'EventsManager'),
-  [ADMIN_ROUTES.products]:  lazy(() => import('./pages/admin/products-manager.js'), 'ProductsManager'),
+  [ADMIN_ROUTES.login]:      lazy(() => import('./pages/admin/login.js'),            'AdminLogin'),
+  [ADMIN_ROUTES.dashboard]:  lazy(() => import('./pages/admin/dashboard.js'),        'AdminDashboard'),
+  [ADMIN_ROUTES.events]:     lazy(() => import('./pages/admin/events-manager.js'),   'EventsManager'),
+  [ADMIN_ROUTES.products]:   lazy(() => import('./pages/admin/products-manager.js'), 'ProductsManager'),
+  [ADMIN_ROUTES.attendance]: lazy(() => import('./pages/admin/attendance.js'),       'AdminAttendance'),
   '*': async (container) => {
     container.innerHTML = `
       <section class="section text-center flex flex-col justify-center items-center" style="min-height: 60vh;">
