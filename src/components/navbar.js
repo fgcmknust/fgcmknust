@@ -115,27 +115,10 @@ export function renderNavbar(container) {
     }
   };
 
-  // Hide hamburger on pages that have no public nav (attendance, nominations)
-  const NO_HAMBURGER_PATHS = new Set(['/attendance', '/nominations']);
-  const updateHamburgerVisibility = () => {
-    const path = (window.location.pathname + window.location.search).split('?')[0] || '/';
-    const toggle = document.getElementById('mobile-menu-toggle');
-    if (toggle) {
-      toggle.style.display = NO_HAMBURGER_PATHS.has(path) ? 'none' : '';
-    }
-    // Inline close — avoids calling closeMenu() which is defined later in this scope
-    if (NO_HAMBURGER_PATHS.has(path)) {
-      const menu = document.getElementById('mobile-menu');
-      if (menu) menu.classList.remove('open');
-      document.body.classList.remove('no-scroll');
-    }
-  };
-
   const handleHashChange = () => {
     updateActiveLink();
     updateNavbarTheme();
     updateCartVisibility();
-    updateHamburgerVisibility();
   };
   
   window.addEventListener('routechange', handleHashChange);
@@ -145,7 +128,6 @@ export function renderNavbar(container) {
   updateActiveLink();
   updateNavbarTheme();
   updateCartVisibility();
-  updateHamburgerVisibility();
 
   // Ensure that clicks on nav links are treated as explicit navigation (start from top)
   const desktopLinks = container.querySelectorAll('.desktop-nav .nav-link');
