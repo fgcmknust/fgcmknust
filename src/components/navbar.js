@@ -123,7 +123,12 @@ export function renderNavbar(container) {
     if (toggle) {
       toggle.style.display = NO_HAMBURGER_PATHS.has(path) ? 'none' : '';
     }
-    if (NO_HAMBURGER_PATHS.has(path)) closeMenu();
+    // Inline close — avoids calling closeMenu() which is defined later in this scope
+    if (NO_HAMBURGER_PATHS.has(path)) {
+      const menu = document.getElementById('mobile-menu');
+      if (menu) menu.classList.remove('open');
+      document.body.classList.remove('no-scroll');
+    }
   };
 
   const handleHashChange = () => {
