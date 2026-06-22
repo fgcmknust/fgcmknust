@@ -301,7 +301,8 @@ img {
 
 /* Always render hero sections immediately (they're above the fold) */
 .page-hero,
-.register-hero {
+.register-hero,
+.nominations-hero {
   content-visibility: visible;
   contain-intrinsic-size: auto;
 }
@@ -1503,6 +1504,37 @@ body.no-scroll {
 }
 
 /* =========================================================
+   NOMINATIONS PAGE HERO
+   ========================================================= */
+.nominations-hero {
+  background-image: url('/images/nominations_laptop.webp');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+}
+
+@media (max-width: 767px) {
+  .nominations-hero {
+    background-image: url('/images/phone_nominations.webp');
+    background-position: center center;
+    min-height: var(--mobile-vh, 100vh) !important;
+  }
+}
+
+.nominations-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* =========================================================
    ADMIN PORTAL — Premium dark + gold
    ========================================================= */
 .admin-shell {
@@ -1998,14 +2030,14 @@ body.no-scroll {
   main > section.bg-bg-alt:not([style*="background-image"]),
   main > section.bg-white:not([style*="background-image"]),
   main > section.gradient-bg:not([style*="background-image"]),
-  main > section[class*="bg-"]:not(.register-hero):not(.page-hero):not([style*="background-image"]) {
+  main > section[class*="bg-"]:not(.register-hero):not(.nominations-hero):not(.page-hero):not([style*="background-image"]) {
     background: #ffffff !important;
     background-color: #ffffff !important;
     background-image: none !important;
   }
 
   /* Force generic .section (no bg class) to white but preserve image-bearing heroes */
-  main > section.section:not(.register-hero):not(.page-hero):not([style*="background-image"]) {
+  main > section.section:not(.register-hero):not(.nominations-hero):not(.page-hero):not([style*="background-image"]) {
     background: #ffffff !important;
     background-color: #ffffff !important;
   }
