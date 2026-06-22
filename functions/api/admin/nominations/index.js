@@ -3,7 +3,7 @@
 export async function onRequestGet(context) {
   const { env } = context;
   const result = await env.DB.prepare(
-    `SELECT id, first_name, last_name, phone, email, role, submitted_at
+    `SELECT id, first_name, middle_name, last_name, phone, email, role, statement, submitted_at
      FROM nominations
      ORDER BY submitted_at DESC`
   ).all();

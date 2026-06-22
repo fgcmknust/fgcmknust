@@ -66,8 +66,9 @@ const routes = {
   [ADMIN_ROUTES.dashboard]:  lazy(() => import('./pages/admin/dashboard.js'),        'AdminDashboard'),
   [ADMIN_ROUTES.events]:     lazy(() => import('./pages/admin/events-manager.js'),   'EventsManager'),
   [ADMIN_ROUTES.products]:   lazy(() => import('./pages/admin/products-manager.js'), 'ProductsManager'),
-  [ADMIN_ROUTES.attendance]:  lazy(() => import('./pages/admin/attendance.js'),    'AdminAttendance'),
-  [ADMIN_ROUTES.nominations]: lazy(() => import('./pages/admin/nominations.js'), 'AdminNominations'),
+  [ADMIN_ROUTES.attendance]:         lazy(() => import('./pages/admin/attendance.js'),           'AdminAttendance'),
+  [ADMIN_ROUTES.nominations]:        lazy(() => import('./pages/admin/nominations.js'),          'AdminNominations'),
+  [ADMIN_ROUTES.eventRegistrations]: lazy(() => import('./pages/admin/event-registrations.js'), 'AdminEventRegistrations'),
   '*': async (container) => {
     container.innerHTML = `
       <section class="section text-center flex flex-col justify-center items-center" style="min-height: 60vh;">

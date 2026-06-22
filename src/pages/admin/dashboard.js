@@ -6,7 +6,7 @@ const STAT_TILES = [
   { key: 'events',                    label: 'Events',                icon: 'calendar-days', href: ADMIN_ROUTES.events },
   { key: 'products',                  label: 'Products',              icon: 'shopping-bag',  href: ADMIN_ROUTES.products },
   { key: 'members',                   label: 'Members',               icon: 'user-round' },
-  { key: 'event_registrations',       label: 'Event Registrations',   icon: 'clipboard-check' },
+  { key: 'event_registrations',       label: 'Event Registrations',   icon: 'clipboard-check', href: ADMIN_ROUTES.eventRegistrations },
   { key: 'purchases',                 label: 'Total Purchases',       icon: 'receipt' },
   { key: 'purchases_awaiting_review', label: 'Awaiting Review',       icon: 'shield-alert', alert: true }
 ];

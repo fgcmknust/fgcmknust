@@ -16,6 +16,7 @@ export const ADMIN_ROUTES = {
   dashboard:  ADMIN_BASE,
   events:     `${ADMIN_BASE}/events`,
   products:   `${ADMIN_BASE}/products`,
-  attendance:  `${ADMIN_BASE}/attendance`,
-  nominations: `${ADMIN_BASE}/nominations`
+  attendance:         `${ADMIN_BASE}/attendance`,
+  nominations:        `${ADMIN_BASE}/nominations`,
+  eventRegistrations: `${ADMIN_BASE}/event-registrations`
 };
