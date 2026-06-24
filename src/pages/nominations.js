@@ -51,30 +51,35 @@ export function Nominations(container) {
             <div class="card p-4 shadow-lg" style="background: rgba(255,255,255,0.12); backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%); border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
 
               <div id="nom-form-wrap">
+                <div class="form-group mb-2">
+                  <label class="${LABEL_CLASS}">Nominator's Name</label>
+                  <input type="text" id="nom-nominator" class="form-control" placeholder="Optional — who is submitting this nomination?" maxlength="120" autocomplete="name" style="${INPUT_STYLE}">
+                </div>
+
                 <div class="grid grid-2 gap-2 mb-2">
                   <div class="form-group mb-0">
-                    <label class="${LABEL_CLASS}">First Name *</label>
+                    <label class="${LABEL_CLASS}">Nominee First Name *</label>
                     <input type="text" id="nom-first-name" class="form-control" placeholder="John" maxlength="120" autocomplete="given-name" style="${INPUT_STYLE}">
                   </div>
                   <div class="form-group mb-0">
-                    <label class="${LABEL_CLASS}">Middle Name</label>
+                    <label class="${LABEL_CLASS}">Nominee Middle Name</label>
                     <input type="text" id="nom-middle-name" class="form-control" placeholder="Optional" maxlength="120" autocomplete="additional-name" style="${INPUT_STYLE}">
                   </div>
                 </div>
 
                 <div class="grid grid-2 gap-2 mb-2">
                   <div class="form-group mb-0">
-                    <label class="${LABEL_CLASS}">Last Name *</label>
+                    <label class="${LABEL_CLASS}">Nominee Last Name *</label>
                     <input type="text" id="nom-last-name" class="form-control" placeholder="Doe" maxlength="120" autocomplete="family-name" style="${INPUT_STYLE}">
                   </div>
                   <div class="form-group mb-0">
-                    <label class="${LABEL_CLASS}">Phone Number *</label>
+                    <label class="${LABEL_CLASS}">Nominee Phone Number *</label>
                     <input type="tel" id="nom-phone" class="form-control" placeholder="055 123 4567" maxlength="32" inputmode="tel" autocomplete="tel" style="${INPUT_STYLE}">
                   </div>
                 </div>
 
                 <div class="form-group mb-2">
-                  <label class="${LABEL_CLASS}">Email Address *</label>
+                  <label class="${LABEL_CLASS}">Nominee Email Address *</label>
                   <input type="email" id="nom-email" class="form-control" placeholder="you@example.com" maxlength="254" inputmode="email" autocomplete="email" style="${INPUT_STYLE}">
                 </div>
 
@@ -87,9 +92,9 @@ export function Nominations(container) {
                 </div>
 
                 <div class="form-group mb-3">
-                  <label class="${LABEL_CLASS}">Why are you suitable for this role? *</label>
+                  <label class="${LABEL_CLASS}">Why is the nominee suitable for this role? *</label>
                   <textarea id="nom-statement" class="form-control" rows="4" maxlength="${STATEMENT_MAX}"
-                    placeholder="Briefly describe why you are suitable for the position you are nominating for…"
+                    placeholder="Briefly describe why the nominee is suitable for this position…"
                     style="${INPUT_STYLE} resize: vertical; min-height: 100px;"></textarea>
                   <div style="display:flex; justify-content:space-between; margin-top:0.25rem;">
                     <span id="nom-stmt-hint" class="text-small" style="color:rgba(255,255,255,0.65);">Minimum ${STATEMENT_MIN} characters</span>
@@ -119,6 +124,7 @@ export function Nominations(container) {
 
   if (window.lucide) lucide.createIcons({ root: container });
 
+  const nominatorEl  = document.getElementById('nom-nominator');
   const firstNameEl  = document.getElementById('nom-first-name');
   const middleNameEl = document.getElementById('nom-middle-name');
   const lastNameEl   = document.getElementById('nom-last-name');
@@ -143,7 +149,7 @@ export function Nominations(container) {
     el.title = '';
   }
 
-  [firstNameEl, middleNameEl, lastNameEl, phoneEl, emailEl, roleEl, statementEl].forEach(el =>
+  [nominatorEl, firstNameEl, middleNameEl, lastNameEl, phoneEl, emailEl, roleEl, statementEl].forEach(el =>
     el.addEventListener('input', () => clearError(el))
   );
 
@@ -160,6 +166,7 @@ export function Nominations(container) {
   });
 
   submitBtn.addEventListener('click', async () => {
+    const nominator_name = nominatorEl.value.trim() || null;
     const first_name  = firstNameEl.value.trim();
     const middle_name = middleNameEl.value.trim() || null;
     const last_name   = lastNameEl.value.trim();
@@ -184,7 +191,16 @@ export function Nominations(container) {
       const res = await fetch('/api/nominations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ first_name, middle_name, last_name, phone, email, role, statement }),
+        body: JSON.stringify({
+          nominator_name,
+          nominee_first_name:  first_name,
+          nominee_middle_name: middle_name,
+          nominee_last_name:   last_name,
+          nominee_phone:       phone,
+          nominee_email:       email,
+          role,
+          statement,
+        }),
       });
 
       const data = await res.json().catch(() => ({}));

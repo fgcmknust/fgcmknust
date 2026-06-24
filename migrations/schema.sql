@@ -205,16 +205,19 @@ CREATE INDEX IF NOT EXISTS idx_att_records_device  ON attendance_records(session
 -- Temporary: self-nominations for leadership roles
 -- ================================================================
 CREATE TABLE IF NOT EXISTS nominations (
-  id           TEXT    PRIMARY KEY,
-  first_name   TEXT    NOT NULL,
-  middle_name  TEXT,
-  last_name    TEXT    NOT NULL,
-  phone        TEXT    NOT NULL,
-  email        TEXT    NOT NULL,
-  role         TEXT    NOT NULL,
-  statement    TEXT    NOT NULL,
-  submitted_at INTEGER NOT NULL,
-  UNIQUE(phone, role)
+  id                  TEXT    PRIMARY KEY,
+  -- Optional: the person submitting the nomination on the nominee's behalf
+  nominator_name      TEXT,
+  -- The person being nominated for the role
+  nominee_first_name  TEXT    NOT NULL,
+  nominee_middle_name TEXT,
+  nominee_last_name   TEXT    NOT NULL,
+  nominee_phone       TEXT    NOT NULL,
+  nominee_email       TEXT    NOT NULL,
+  role                TEXT    NOT NULL,
+  statement           TEXT    NOT NULL,
+  submitted_at        INTEGER NOT NULL,
+  UNIQUE(nominee_phone, role)
 );
 
 CREATE INDEX IF NOT EXISTS idx_nominations_role      ON nominations(role);
