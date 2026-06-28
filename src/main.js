@@ -5,8 +5,6 @@ import './utils/icons.js';
 import { Router } from './utils/router.js';
 import { Animations } from './utils/animations.js';
 import { installNavStateDelegate } from './utils/nav-state.js';
-import { ADMIN_ROUTES } from './config/admin-path.js';
-
 // Components — needed for every page, kept in the main bundle.
 import { renderNavbar } from './components/navbar.js';
 import { renderFooter } from './components/footer.js';
@@ -18,8 +16,15 @@ import { renderCartDrawer } from './components/cart-drawer.js';
 // product, etc.) before the first paint. With per-route dynamic imports
 // each page becomes its own chunk and the Service Worker caches it after
 // first navigation.
-const lazy = (loader, exportName) =>
-  (container, ctx) => loader().then((m) => m[exportName](container, ctx));
+const lazy = (loader, exportName) => {
+  const run = (container, ctx) => loader().then((m) => m[exportName](container, ctx));
+  // Expose the underlying import so the router can warm a route's chunk on
+  // navigation intent (hover / touch-start). Field data flagged the event-card
+  // "Register Now" link at INP 240ms — the dynamic import + chunk download was
+  // landing inside the interaction. Prefetching moves that cost ahead of the tap.
+  run.prefetch = loader;
+  return run;
+};
 
 // Setup App Shell
 function initAppShell() {
@@ -59,16 +64,6 @@ const routes = {
   '/cart': lazy(() => import('./pages/cart.js'), 'Cart'),
   '/checkout-manual': lazy(() => import('./pages/checkout-manual.js'), 'CheckoutManual'),
   '/payment-status': lazy(() => import('./pages/payment-status.js'), 'PaymentStatus'),
-  // Admin routes live under a private slug (see src/config/admin-path.js).
-  // Visitors hitting /admin, /admin/login, /wp-admin, /administrator, etc. just
-  // see the public 404 — the portal isn't discoverable from path-scanning.
-  [ADMIN_ROUTES.login]:      lazy(() => import('./pages/admin/login.js'),            'AdminLogin'),
-  [ADMIN_ROUTES.dashboard]:  lazy(() => import('./pages/admin/dashboard.js'),        'AdminDashboard'),
-  [ADMIN_ROUTES.events]:     lazy(() => import('./pages/admin/events-manager.js'),   'EventsManager'),
-  [ADMIN_ROUTES.products]:   lazy(() => import('./pages/admin/products-manager.js'), 'ProductsManager'),
-  [ADMIN_ROUTES.attendance]:         lazy(() => import('./pages/admin/attendance.js'),           'AdminAttendance'),
-  [ADMIN_ROUTES.nominations]:        lazy(() => import('./pages/admin/nominations.js'),          'AdminNominations'),
-  [ADMIN_ROUTES.eventRegistrations]: lazy(() => import('./pages/admin/event-registrations.js'), 'AdminEventRegistrations'),
   '*': async (container) => {
     container.innerHTML = `
       <section class="section text-center flex flex-col justify-center items-center" style="min-height: 60vh;">

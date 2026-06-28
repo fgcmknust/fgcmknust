@@ -52,6 +52,29 @@ export class Router {
       this.handleRouteChange();
     });
 
+    // Prefetch a route's chunk on navigation intent (pointer hover / touch
+    // start) so the dynamic import + chunk download overlaps the user's
+    // decision time instead of adding to interaction latency (INP). Each path
+    // is warmed at most once. On touch devices `pointerover` fires just before
+    // the tap, still giving the import a head start before the click handler.
+    const prefetched = new Set();
+    const warmRoute = (e) => {
+      const link = e.target && e.target.closest ? e.target.closest('a') : null;
+      if (!link) return;
+      let path = link.getAttribute('href') || '';
+      if (path.startsWith('#/')) path = path.slice(1);
+      if (!path.startsWith('/')) return;
+      path = path.split('?')[0].split('#')[0].replace(/\/+$/, '') || '/';
+      if (prefetched.has(path)) return;
+      const route = this.routes[path];
+      if (route && typeof route.prefetch === 'function') {
+        prefetched.add(path);
+        Promise.resolve(route.prefetch()).catch(() => { /* prefetch is best-effort */ });
+      }
+    };
+    document.addEventListener('pointerover', warmRoute, { passive: true });
+    document.addEventListener('touchstart', warmRoute, { passive: true });
+
     // Handle initial load
     if (document.readyState === 'loading') {
       window.addEventListener('DOMContentLoaded', () => this.handleRouteChange());

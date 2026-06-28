@@ -56,7 +56,7 @@ export async function PaymentStatus(container, { query }) {
     <section class="section text-center" style="min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
       <div class="loader-spinner mb-3" style="width: 60px; height: 60px; border: 4px solid rgba(197, 151, 62, 0.2); border-top-color: var(--color-gold); border-radius: 50%; animation: spin 1s linear infinite;"></div>
       <h2>Verifying Payment</h2>
-      <p class="text-muted">Please wait while we confirm your transaction with Paystack...</p>
+      <p class="text-muted">Please wait while we confirm your transaction with Hubtel...</p>
     </section>
   `;
 

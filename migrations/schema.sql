@@ -51,8 +51,11 @@ CREATE TABLE IF NOT EXISTS purchases (
     status TEXT DEFAULT 'pending',
     channel TEXT,
     items_json TEXT NOT NULL,
-    paystack_response TEXT,
-    -- 'paystack' (online) or 'manual_momo' (MoMo + screenshot upload)
+    -- Sanitized Hubtel Transaction Status payload (JSON): clientReference,
+    -- transactionId, externalTransactionId, status, amount, charges,
+    -- amountAfterCharges, currencyCode, paymentMethod, date.
+    hubtel_response TEXT,
+    -- 'hubtel' (online) or 'manual_momo' (MoMo + screenshot upload)
     payment_method TEXT,
     -- R2-backed URL of the manual-payment screenshot, served at /images/uploads/payments/*
     payment_proof_url TEXT,
@@ -86,7 +89,7 @@ CREATE INDEX IF NOT EXISTS idx_event_registrations_email ON event_registrations(
 
 -- ================================================================
 -- EVENTS TABLE
--- Dynamically managed events (created via admin API)
+-- Dynamically managed events
 -- Keep only "Keepers of the Flame" as the primary event
 -- ================================================================
 CREATE TABLE IF NOT EXISTS events (
@@ -162,11 +165,9 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
   user_agent TEXT
 );
 
-CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions(expires_at);
-
 -- ================================================================
 -- ATTENDANCE SESSIONS TABLE
--- Admin creates one per event window; QR code always points to /attendance
+-- One per event window; QR code always points to /attendance
 -- ================================================================
 CREATE TABLE IF NOT EXISTS attendance_sessions (
   id         TEXT    PRIMARY KEY,

@@ -24,19 +24,36 @@
   // ---- 1. Route-conditional hero preload --------------------------------
   try {
     var path = location.pathname.replace(/\/+$/, '') || '/';
+    // A route maps to either a single hero image (same on all viewports) or a
+    // { mobile, desktop } pair when the breakpoints load different art. The
+    // nominations hero is a CSS background-image — opaque to the browser's
+    // preload scanner — so without this hint it was discovered only after the
+    // JS bundle parsed + routed, producing Poor LCP (~3.7s) in field data.
     var heroByRoute = {
       '/event-registration': '/images/Regis.webp',
-      '/register': '/images/Regis.webp'
+      '/register': '/images/Regis.webp',
+      '/nominations': {
+        mobile: '/images/phone_nominations.webp',
+        desktop: '/images/nominations_laptop.webp'
+      }
     };
-    var hero = heroByRoute[path];
-    if (hero) {
+    var preloadImage = function (href, media) {
+      if (!href) return;
       var link = document.createElement('link');
       link.rel = 'preload';
       link.as = 'image';
-      link.href = hero;
+      link.href = href;
       link.setAttribute('fetchpriority', 'high');
-      if (hero.endsWith('.webp')) link.setAttribute('type', 'image/webp');
+      if (media) link.setAttribute('media', media);
+      if (href.indexOf('.webp') !== -1) link.setAttribute('type', 'image/webp');
       document.head.appendChild(link);
+    };
+    var hero = heroByRoute[path];
+    if (typeof hero === 'string') {
+      preloadImage(hero);
+    } else if (hero) {
+      preloadImage(hero.mobile, '(max-width: 767px)');
+      preloadImage(hero.desktop, '(min-width: 768px)');
     }
   } catch (e) { /* preload is a hint; ignore failures */ }
 

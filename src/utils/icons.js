@@ -20,7 +20,11 @@ import {
   CheckCircle, CheckCircle2, ChevronLeft, ChevronRight, ClipboardCheck,
   Clock, Inbox, Info, KeyRound, LayoutDashboard, Lock, LogOut, Mail,
   MapPin, Menu, Phone, Plus, Quote, Receipt, RefreshCw, ShieldAlert,
-  ShoppingBag, ShoppingCart, Trash2, UserRound, X, XCircle, UploadCloud
+  ShoppingBag, ShoppingCart, Trash2, UserRound, X, XCircle, UploadCloud,
+  User, Users, UserCheck, UserPlus, Boxes, HandCoins, HeartHandshake,
+  BarChart3, Search, Bell, Download, TrendingUp, TrendingDown,
+  Settings, CalendarClock, CalendarCheck, Ellipsis, CircleCheck, CircleAlert,
+  Eye, EyeOff, QrCode
 } from 'lucide';
 
 // Keys must be PascalCase: Lucide converts a `data-lucide="shopping-cart"`
@@ -31,7 +35,11 @@ const icons = {
   CheckCircle, CheckCircle2, ChevronLeft, ChevronRight, ClipboardCheck,
   Clock, Inbox, Info, KeyRound, LayoutDashboard, Lock, LogOut, Mail,
   MapPin, Menu, Phone, Plus, Quote, Receipt, RefreshCw, ShieldAlert,
-  ShoppingBag, ShoppingCart, Trash2, UserRound, X, XCircle, UploadCloud
+  ShoppingBag, ShoppingCart, Trash2, UserRound, X, XCircle, UploadCloud,
+  User, Users, UserCheck, UserPlus, Boxes, HandCoins, HeartHandshake,
+  BarChart3, Search, Bell, Download, TrendingUp, TrendingDown,
+  Settings, CalendarClock, CalendarCheck, Ellipsis, CircleCheck, CircleAlert,
+  Eye, EyeOff, QrCode
 };
 
 window.lucide = {

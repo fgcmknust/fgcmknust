@@ -1,74 +1,49 @@
 // POST /api/pay/webhook
-// Receives events from Paystack (e.g. charge.success)
+// Hubtel's Online Checkout callback. After a customer pays on the hosted page,
+// Hubtel POSTs the result here. Hubtel callbacks are NOT signed, so we never
+// trust the posted body on its own — we extract the clientReference and
+// re-confirm the payment server-to-server via the Transaction Status Check API
+// before marking the purchase paid.
 
-import { constantTimeEqual } from '../_auth.js';
-
-// Same whitelist as /api/pay/verify — only store fields we actually need.
-function sanitizePaystackData(data) {
-  if (!data || typeof data !== 'object') return null;
-  return {
-    reference: data.reference,
-    status: data.status,
-    amount: data.amount,
-    currency: data.currency,
-    channel: data.channel,
-    paid_at: data.paid_at,
-    transaction_date: data.transaction_date,
-    gateway_response: data.gateway_response,
-    fees: data.fees
-  };
-}
+import { fetchHubtelStatus, sanitizeGatewayData } from '../_hubtel.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
   const DB = env.DB;
-  const secretKey = env.PAYSTACK_SECRET_KEY;
-
-  if (!secretKey) {
-    return Response.json({ error: 'Server misconfigured' }, { status: 500 });
-  }
-
-  const signature = request.headers.get('x-paystack-signature') || '';
-  const bodyText = await request.text();
-
-  // HMAC SHA-512 signature verification (Paystack docs)
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(secretKey),
-    { name: 'HMAC', hash: 'SHA-512' },
-    false,
-    ['sign']
-  );
-  const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(bodyText));
-  const hashArray = Array.from(new Uint8Array(signatureBuffer));
-  const expectedSignature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-  if (!constantTimeEqual(signature.toLowerCase(), expectedSignature)) {
-    return Response.json({ error: 'Invalid signature' }, { status: 400 });
-  }
 
   let event;
   try {
-    event = JSON.parse(bodyText);
+    event = await request.json();
   } catch (e) {
-    return Response.json({ error: 'Invalid payload' }, { status: 400 });
+    // Always acknowledge so Hubtel doesn't retry a malformed delivery forever.
+    return new Response('OK', { status: 200 });
   }
 
-  if (event && event.event === 'charge.success' && event.data && typeof event.data.reference === 'string') {
-    const reference = event.data.reference;
+  // The callback nests the payload under `Data` (PascalCase); be tolerant of
+  // either casing so a minor Hubtel response change doesn't silently break this.
+  const payload = (event && (event.Data || event.data)) || event || {};
+  const reference = payload.ClientReference || payload.clientReference;
+
+  if (reference) {
     try {
-      const current = await DB.prepare('SELECT status FROM purchases WHERE reference = ?').bind(reference).first();
-      if (current && current.status !== 'success') {
-        await DB.prepare(`
-          UPDATE purchases
-          SET status = 'success', paystack_response = ?, updated_at = CURRENT_TIMESTAMP
-          WHERE reference = ?
-        `).bind(JSON.stringify(sanitizePaystackData(event.data)), reference).run();
+      const result = await fetchHubtelStatus(env, reference);
+      if (result.paid) {
+        const current = await DB.prepare('SELECT status, amount FROM purchases WHERE reference = ?').bind(reference).first();
+        if (current && current.status !== 'success') {
+          // Defend against a tampered/replayed callback for a different amount.
+          const expected = Math.round(Number(current.amount) * 100);
+          const got = Math.round(Number(result.data && (result.data.amount ?? result.data.Amount)) * 100);
+          const status = got === expected ? 'success' : 'amount_mismatch';
+          await DB.prepare(`
+            UPDATE purchases
+            SET status = ?, hubtel_response = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE reference = ?
+          `).bind(status, JSON.stringify(sanitizeGatewayData(result.data)), reference).run();
+        }
       }
     } catch (err) {
-      console.error('Webhook DB update failed', err);
-      // Acknowledge to Paystack regardless; failed DB writes are surfaced via logs.
+      console.error('Webhook status confirmation failed', err);
+      // Acknowledge regardless; /api/pay/verify (return URL) is the backstop.
     }
   }
 

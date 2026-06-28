@@ -1,6 +1,6 @@
 // Image file-signature ("magic bytes") validator.
 //
-// The admin upload + manual-payment upload endpoints accept JPEG, PNG, WEBP,
+// The manual-payment upload endpoint accepts JPEG, PNG, WEBP,
 // and GIF. Without this check, an attacker can name an HTML/SVG/PDF payload
 // `xss.jpg`, get it accepted via the extension + Content-Type check, and have
 // it stored in R2 with an `image/jpeg` Content-Type. The X-Content-Type-Options:

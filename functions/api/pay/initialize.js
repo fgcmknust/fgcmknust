@@ -1,11 +1,17 @@
 // POST /api/pay/initialize
-// Initializes a Paystack transaction and creates a pending purchase record in D1.
+// Creates a Hubtel Online Checkout invoice and a pending purchase record in D1.
+//
+// Hubtel uses a HOSTED-REDIRECT model (unlike the old inline popup): we create
+// the invoice server-side, get back a `checkoutUrl`, and the browser is then
+// redirected to Hubtel's hosted page to pay. After payment Hubtel POSTs the
+// result to our `callbackUrl` (/api/pay/webhook) and redirects the customer to
+// our `returnUrl` (/payment-status), which re-confirms via /api/pay/verify.
 //
 // Security notes:
 // - The amount is always recomputed server-side from product prices in the DB.
 //   The client-supplied `amount` field is ignored entirely so a tampered cart
 //   can never lower the price.
-// - The reference is generated server-side, not trusted from the client.
+// - The clientReference is generated server-side, not trusted from the client.
 
 import { generateUUIDv7 } from '../_utils.js';
 import {
@@ -101,15 +107,15 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({ error: pricing.error }), { status: 400, headers: { 'Content-Type': 'application/json' } });
   }
 
-  // Subtotal = sum of product prices. Fee = Paystack processing fee. Amount = subtotal + fee.
+  // Subtotal = sum of product prices. Fee = Hubtel processing fee. Amount = subtotal + fee.
   const { subtotal: subtotalVal, fee: feeVal, total: amountVal } = computeChargeBreakdown(pricing.total);
 
   const reference = generateReference();
   const id = generateUUIDv7();
 
   const insert = await DB.prepare(`
-    INSERT INTO purchases (id, reference, customer_email, customer_first_name, customer_middle_name, customer_last_name, customer_phone, amount, items_json, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+    INSERT INTO purchases (id, reference, customer_email, customer_first_name, customer_middle_name, customer_last_name, customer_phone, amount, items_json, status, payment_method)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'hubtel')
   `).bind(
     id,
     reference,
@@ -126,47 +132,61 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({ error: 'Failed to record pending transaction' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 
-  const paystackPublicKey = env.PAYSTACK_PUBLIC_KEY;
-  const paystackSecretKey = env.PAYSTACK_SECRET_KEY;
+  // Hubtel credentials (Basic auth) + the POS / merchant account number.
+  const clientId = env.HUBTEL_CLIENT_ID;
+  const clientSecret = env.HUBTEL_CLIENT_SECRET;
+  const merchantAccount = env.HUBTEL_MERCHANT_ACCOUNT;
 
-  if (!paystackPublicKey && !paystackSecretKey) {
-    return new Response(JSON.stringify({ error: 'Paystack keys not configured' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  if (!clientId || !clientSecret || !merchantAccount) {
+    return new Response(JSON.stringify({ error: 'Hubtel keys not configured' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 
-  let paystackInit = null;
+  // Build callback/return URLs from the request origin so the same code works
+  // across preview + production deployments. Allow env overrides if needed.
+  const origin = new URL(request.url).origin;
+  const callbackUrl = env.HUBTEL_CALLBACK_URL || `${origin}/api/pay/webhook`;
+  const returnUrl = `${origin}/payment-status?reference=${encodeURIComponent(reference)}`;
+  const cancellationUrl = `${origin}/cart`;
+  const displayName = [first_name, middle_name, last_name].filter(Boolean).join(' ');
+
+  let checkoutUrl = null;
   try {
-    if (paystackSecretKey) {
-      const amountInPesewas = Math.round(amountVal * 100);
-      const displayName = [first_name, middle_name, last_name].filter(Boolean).join(' ');
-      const payload = {
-        email,
-        amount: amountInPesewas,
-        reference,
-        metadata: { phone: phone || '', name: displayName, items: itemsSan }
-      };
-      if (env.PAYSTACK_CALLBACK_URL) payload.callback_url = env.PAYSTACK_CALLBACK_URL;
+    const auth = btoa(`${clientId}:${clientSecret}`);
+    const payload = {
+      // Hubtel expects the amount as a decimal in the merchant's currency (GHS).
+      totalAmount: amountVal,
+      description: `FGCM-KNUST order ${reference}`,
+      callbackUrl,
+      returnUrl,
+      cancellationUrl,
+      merchantAccountNumber: merchantAccount,
+      clientReference: reference,
+      payeeName: displayName,
+      payeeMobileNumber: phone || '',
+      payeeEmail: email || ''
+    };
 
-      const psRes = await fetch('https://api.paystack.co/transaction/initialize', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${paystackSecretKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+    const hubtelRes = await fetch('https://payproxyapi.hubtel.com/items/initiate', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
 
-      let psData = null;
-      const text = await psRes.text();
-      try { psData = text ? JSON.parse(text) : null; } catch (e) { psData = null; }
+    let hubtelData = null;
+    const text = await hubtelRes.text();
+    try { hubtelData = text ? JSON.parse(text) : null; } catch (e) { hubtelData = null; }
 
-      if (psRes.ok && psData && psData.status) {
-        paystackInit = psData.data;
-      } else {
-        console.warn('Paystack initialize failed', { status: psRes.status });
-      }
+    // Hubtel returns { status: "Success", data: { checkoutUrl, checkoutDirectUrl, ... } }
+    if (hubtelRes.ok && hubtelData && hubtelData.data && (hubtelData.data.checkoutUrl || hubtelData.data.checkoutDirectUrl)) {
+      checkoutUrl = hubtelData.data.checkoutDirectUrl || hubtelData.data.checkoutUrl;
+    } else {
+      console.warn('Hubtel initiate failed', { status: hubtelRes.status });
     }
   } catch (err) {
-    console.error('Error initializing Paystack transaction', err);
+    console.error('Error initializing Hubtel checkout', err);
   }
 
   return new Response(JSON.stringify({
@@ -175,7 +195,7 @@ export async function onRequestPost(context) {
     subtotal: subtotalVal,
     fee: feeVal,
     amount: amountVal,
-    publicKey: paystackPublicKey || null,
-    paystack: paystackInit
+    // The frontend redirects the browser to this hosted Hubtel checkout page.
+    checkoutUrl
   }), { headers: { 'Content-Type': 'application/json' } });
 }

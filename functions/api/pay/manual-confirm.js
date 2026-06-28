@@ -11,7 +11,7 @@
 //   3. Recompute the cart price server-side — never trust client amount
 //   4. Stream the screenshot to R2 under uploads/payments/<uuid>.<ext>
 //   5. Insert a purchases row with status='awaiting_review' and
-//      payment_method='manual_momo' so an admin can verify and mark paid.
+//      payment_method='manual_momo' so it can later be verified and marked paid.
 
 import { generateUUIDv7 } from '../_utils.js';
 import {
@@ -33,8 +33,8 @@ const EXT_TO_MIME = {
 };
 
 function generateReference() {
-  // Same shape as Paystack-mode references so admin tooling can treat them
-  // uniformly.
+  // Same shape as the online-gateway references so downstream tooling can treat
+  // them uniformly.
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
   const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');

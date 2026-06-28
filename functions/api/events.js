@@ -6,7 +6,7 @@ export async function onRequestGet(context) {
   const url = new URL(request.url);
   const isSpecial = url.searchParams.get('special');
 
-  // Events change only via admin edits, so cache briefly at the edge. The
+  // Events change rarely, so cache briefly at the edge. The
   // default URL-based cache key keeps the ?special=1 variant separate from the
   // full list automatically.
   return withEdgeCache(context, { maxAge: 60 }, async () => {

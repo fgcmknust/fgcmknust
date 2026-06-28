@@ -1,14 +1,19 @@
-// Paystack processing fee (Ghana, GHS): 1.95% capped at GHS 10.
+// Hubtel processing fee (Ghana, GHS).
 // Kept in sync with src/utils/fees.js — if you change rates, change both.
-
-export const PAYSTACK_FEE_RATE = 0.0195;
-export const PAYSTACK_FEE_CAP_CEDIS = 10;
+//
+// NOTE: these are placeholder rates carried over from the previous gateway.
+// Confirm the exact charge against your Hubtel merchant agreement (Hubtel's
+// fee differs by channel — card vs mobile money) before the online flow is
+// switched on; the value below is only used by the (currently suppressed)
+// online checkout, not the active manual MoMo flow.
+export const HUBTEL_FEE_RATE = 0.0195;
+export const HUBTEL_FEE_CAP_CEDIS = 10;
 
 export function computeProcessingFee(subtotalCedis) {
   const subtotal = Number(subtotalCedis);
   if (!Number.isFinite(subtotal) || subtotal <= 0) return 0;
-  const raw = subtotal * PAYSTACK_FEE_RATE;
-  const capped = Math.min(raw, PAYSTACK_FEE_CAP_CEDIS);
+  const raw = subtotal * HUBTEL_FEE_RATE;
+  const capped = Math.min(raw, HUBTEL_FEE_CAP_CEDIS);
   return Math.round(capped * 100) / 100;
 }
 

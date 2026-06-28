@@ -2,7 +2,7 @@ import { CartStore } from '../utils/cart-store.js';
 import { formatGHS, escapeHtml } from '../utils/helpers.js';
 import { showToast } from '../components/toast.js';
 import { attachValidation, Validators, sanitizeInputString } from '../utils/validation.js';
-// NOTE: Turnstile + Paystack integration left in the file but disabled so we
+// NOTE: Turnstile + Hubtel online checkout left in the file but disabled so we
 // can re-enable card / online payments later without rewriting from scratch.
 // The current flow collects details on this page and continues to
 // /checkout-manual where the customer pays via MoMo and uploads a proof.
@@ -11,8 +11,8 @@ import { computeChargeBreakdown } from '../utils/fees.js';
 
 export async function Cart(container) {
   // Before rendering, drop any cart items whose product ID is no longer in the
-  // live catalogue. Without this, a stale localStorage entry (admin deleted
-  // the product, customer cleared the wrong row, etc.) causes the server-side
+  // live catalogue. Without this, a stale localStorage entry (the product was
+  // removed from the catalogue, customer cleared the wrong row, etc.) causes the server-side
   // price recompute on /api/pay/manual-confirm to reject the whole order with
   // "Unknown product in cart".
   try {
@@ -174,7 +174,7 @@ export async function Cart(container) {
 
   // Turnstile is currently a no-op on this page because the manual MoMo flow
   // does its CAPTCHA on /checkout-manual. The mount is kept (commented) so it
-  // can be re-enabled instantly when Paystack is switched back on.
+  // can be re-enabled instantly when the Hubtel online flow is switched back on.
   //
   // const captcha = await mountTurnstile(document.getElementById('checkout-captcha'), { theme: 'light' });
   document.getElementById('checkout-captcha').style.display = 'none';
@@ -207,9 +207,13 @@ export async function Cart(container) {
   });
 
   // ---------------------------------------------------------------------------
-  // Original Paystack flow — preserved here so it can be re-enabled by replacing
-  // the click handler above. Do NOT delete; the API endpoints, Paystack script,
-  // and customer validation upstream still work as before.
+  // Hubtel online flow — preserved here (suppressed) so it can be re-enabled by
+  // replacing the click handler above. Hubtel uses a HOSTED-REDIRECT checkout:
+  // /api/pay/initialize creates the invoice and returns a `checkoutUrl`, and we
+  // send the browser there. No inline SDK/script is required (unlike the old
+  // popup gateway), so nothing extra needs loading in index.html. On completion
+  // Hubtel redirects back to /payment-status?reference=... which verifies the
+  // transaction. Do NOT delete; the /api/pay/* endpoints still work.
   // ---------------------------------------------------------------------------
   /*
   const captcha = await mountTurnstile(document.getElementById('checkout-captcha'), { theme: 'light' });
@@ -260,7 +264,6 @@ export async function Cart(container) {
     const last_name = sanitizeInputString(values.last_name, 120);
     const email = sanitizeInputString(values.email, 254);
     const phone = sanitizeInputString(values.phone, 32);
-    const displayName = [first_name, middle_name, last_name].filter(Boolean).join(' ');
 
     setPayButtonLoading(payBtn, true);
 
@@ -291,34 +294,12 @@ export async function Cart(container) {
         return;
       }
 
-      const serverAmount = Number(initData.amount);
-      const serverReference = initData.reference;
-      if (!Number.isFinite(serverAmount) || !serverReference) {
-        throw new Error('Invalid initialization response');
+      if (!initData.checkoutUrl) {
+        throw new Error('Could not start the payment. Please try again.');
       }
 
-      const handler = PaystackPop.setup({
-        key: initData.publicKey,
-        email,
-        amount: Math.round(serverAmount * 100),
-        currency: 'GHS',
-        ref: serverReference,
-        metadata: {
-          custom_fields: [
-            { display_name: 'Name', variable_name: 'name', value: displayName },
-            { display_name: 'Phone', variable_name: 'phone', value: phone }
-          ]
-        },
-        callback: function(response) {
-          window.appNavigate(`/payment-status?reference=${encodeURIComponent(response.reference)}`);
-        },
-        onClose: function() {
-          showToast('Payment window closed.', 'info');
-          setPayButtonLoading(payBtn, false);
-        }
-      });
-
-      handler.openIframe();
+      // Hand off to Hubtel's hosted checkout page (full-page redirect).
+      window.location.href = initData.checkoutUrl;
     } catch (err) {
       console.error(err);
       showToast(err.message || 'Payment initialization failed', 'error');

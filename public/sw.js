@@ -39,11 +39,11 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  // Only handle same-origin traffic. External CDNs (fonts, Paystack, Lucide,
-  // Cloudflare Insights) are handled by the browser HTTP cache.
+  // Only handle same-origin traffic. External origins (fonts, Cloudflare
+  // Insights, the Hubtel hosted checkout) are handled by the browser directly.
   if (url.origin !== self.location.origin) return;
 
-  // Never intercept live data, admin auth flows, or analytics beacons.
+  // Never intercept live data (/api/*) or analytics beacons.
   if (url.pathname.startsWith('/api/')) return;
 
   const accept = request.headers.get('accept') || '';
@@ -106,7 +106,7 @@ async function cacheFirst(request) {
   return response;
 }
 
-// Allow the page to ask for an immediate update (e.g. after admin edits).
+// Allow the page to ask for an immediate update (e.g. after a deploy).
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });

@@ -34,10 +34,10 @@
     <link rel="preload" as="image" href="/images/Laptop.webp" type="image/webp" media="(min-width: 768px)" fetchpriority="high" />
     <link rel="preload" as="image" href="/images/phone.webp" type="image/webp" media="(max-width: 767px)" fetchpriority="high" />
     <!--
-      No api.paystack.co preconnect: the browser never contacts Paystack directly
-      (the Worker calls Paystack server-side in /api/pay/*), so the preconnect just
-      opened an unused TLS connection. Re-add only if the in-browser Paystack flow
-      is re-enabled.
+      No payment-gateway preconnect: the browser never contacts Hubtel directly.
+      The Worker calls Hubtel server-side in /api/pay/*, and the hosted checkout
+      is reached via a full-page redirect, so a preconnect would just open an
+      unused TLS connection.
     -->
     <link rel="dns-prefetch" href="https://challenges.cloudflare.com" />
 
@@ -66,13 +66,10 @@
     -->
 
     <!--
-      Paystack InlineJS v2 — intentionally NOT loaded here.
-      The active checkout uses the manual-payment flow; the Paystack/PaystackPop
-      code in src/pages/cart.js is currently commented out, so loading this script
-      globally downloaded + parsed a third-party script on every page for nothing.
-      To re-enable Paystack: load it on demand inside the checkout handler (inject
-      the script tag and await its onload before calling PaystackPop.setup), rather
-      than blocking it on the global critical path again.
+      No payment SDK is loaded here. The active checkout uses the manual-payment
+      flow, and the (suppressed) Hubtel online flow in src/pages/cart.js uses a
+      HOSTED-REDIRECT checkout — the browser is sent to Hubtel's hosted page via
+      window.location, so there is no inline SDK/script to load on this origin.
     -->
 
     <!--

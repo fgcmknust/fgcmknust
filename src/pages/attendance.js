@@ -242,6 +242,13 @@ function renderState(container, state, ctx = {}) {
       <p class="att-sub">There is no attendance session open right now.<br>Please wait until one is opened.</p>`;
     return;
   }
+  if (state === 'session-expired') {
+    body(container).innerHTML = `
+      <div class="att-icon">⏰</div>
+      <h2 class="att-title">Session Expired</h2>
+      <p class="att-sub">This check-in session has ended.<br>Please check with a church official for the next session.</p>`;
+    return;
+  }
   if (state === 'net-error') {
     body(container).innerHTML = `
       <div class="att-icon">⚠️</div>

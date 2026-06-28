@@ -18,7 +18,7 @@ function parseJsonArray(value) {
 export async function onRequestGet(context) {
   const { env } = context;
 
-  // Products change only when an admin edits them, so cache briefly at the
+  // Products change rarely, so cache briefly at the
   // edge: the catalog loads instantly worldwide and edits propagate within the
   // TTL. Keep this short so changes appear quickly without a global purge.
   return withEdgeCache(context, { maxAge: 60 }, async () => {
